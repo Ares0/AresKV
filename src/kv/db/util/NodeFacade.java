@@ -13,9 +13,10 @@ public class NodeFacade<K, V> {
     private long current;
     private long expire;
     private boolean iswatch;
+    private long cid;
     private boolean isDirty;
 
-    public NodeFacade(int hash, K key, V value, Node<K, V> next) {
+    public NodeFacade(int hash, K key, V value, Node<K, V> next, long cid) {
         this.hash = hash;
         this.key = key;
         this.value = value;
@@ -25,7 +26,15 @@ public class NodeFacade<K, V> {
     public final K getKey()        { return key; }
     public final V getValue()      { return value; }
     
-    public final int hashCode() {
+    public long getCid() {
+		return cid;
+	}
+
+	public void setCid(long cid) {
+		this.cid = cid;
+	}
+
+	public final int hashCode() {
         return Objects.hashCode(key) ^ Objects.hashCode(value);
     }
 

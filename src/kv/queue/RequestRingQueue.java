@@ -3,7 +3,7 @@ package kv.queue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import kv.db.Request;
+import kv.db.DbRequest;
 import kv.synchro.SleepSynchronous;
 import kv.synchro.Synchronous;
 
@@ -19,7 +19,7 @@ public class RequestRingQueue<K, V> implements RequestQueue<K, V> {
 	
 	private volatile int readIndex;
 	
-	private Request<K, V>[] ringBuffer;
+	private DbRequest<K, V>[] ringBuffer;
 	
 	private Lock lock;
 	
@@ -45,11 +45,11 @@ public class RequestRingQueue<K, V> implements RequestQueue<K, V> {
 		this.readSyn = readSyn;
 		
 		lock = new ReentrantLock();
-		ringBuffer = new Request[capacity];
+		ringBuffer = new DbRequest[capacity];
 	}
 	
 	// produce
-	public void produce(Request<K, V> com) {
+	public void produce(DbRequest<K, V> com) {
 		lock.lock();
 		
 		int ringReadIndex;
@@ -78,7 +78,7 @@ public class RequestRingQueue<K, V> implements RequestQueue<K, V> {
 	}
 
 	// consume
-	public Request<K, V> consume() {
+	public DbRequest<K, V> consume() {
 		
 		while (readIndex ==0 && writeIndex == 0) {
 			readSyn.doSynchronous();

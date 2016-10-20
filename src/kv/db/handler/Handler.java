@@ -1,17 +1,17 @@
 package kv.db.handler;
 
 import kv.db.KVDataBase;
-import kv.db.Request;
+import kv.db.DbRequest;
 import kv.db.util.NodeFacade;
 
 // handler
 public interface Handler<K, V> {
 
-	void process(Request<K, V> req);
+	void process(DbRequest<K, V> req);
 	
 	void setNextHandler(Handler<K, V> h);
 	
-	void setDataBase(KVDataBase db);
+	void setDataBase(KVDataBase<K, V> kvDataBase);
 	
 	boolean hasNext(int index);
 	

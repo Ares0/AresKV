@@ -1,7 +1,8 @@
 package kv.db.handler;
 
-import kv.db.Request;
-import kv.db.Response;
+import kv.Command;
+import kv.db.DbRequest;
+import kv.db.DbResponse;
 import kv.db.util.DataTable;
 
 
@@ -11,43 +12,36 @@ import kv.db.util.DataTable;
  * */ 
 public class WatchHandler<K, V> extends AbstractHandler<K, V> implements Handler<K, V> {
 	
-	private DataTable<K, Request<K, V>> dt;
+	private DataTable<K, DbRequest<K, V>> dt;
 	
 	public WatchHandler() {
 		dt = new DataTable<>();
 	}
 	
-	@SuppressWarnings("unchecked")
-	public void process(Request<K, V> req) {
+	public void process(DbRequest<K, V> req) {
 		K key = req.getKey();
-		int type = req.getType();
-		Request<K, V> reqWatch = dt.get(key);
+		int type = req.getCommand();
+		DbRequest<K, V> reqWatch = dt.get(key);
+		long cid = req.getClientId();
 		
-		if (type == Request.PUT || type == Request.REMOVE) {
+		if (type == Command.PUT || type == Command.REMOVE) {
 			if (reqWatch == null && req.isWatch()) {
-				dt.put(key, req);
+				dt.put(key, req, cid);
+			} else if (isDirty(reqWatch, cid)) {
+				doDirtyRep(req, key, reqWatch);
+				return;  // 脏数据返回
+			} else if (reqWatch != null) {
+				req.setDirty(true);
+				dt.put(key, req, cid); 
 			}
-			if (reqWatch != null) {
-				reqWatch.setDirty(true);
-				dt.put(key, reqWatch); 
+		} else if (type == Command.GET) {
+			if (isDirty(reqWatch, cid)) {
+				doDirtyRep(req, key, reqWatch);
+				return;  // 脏数据返回
 			}
-		} else if (type == Request.GET) {
-			if (reqWatch != null && reqWatch.isDirty() 
-					&& req.getClientId() == reqWatch.getClientId()) {
-				Response<K, V> rep = new Response<>();
-				rep.setClientId(req.getClientId());
-				rep.setKey(reqWatch.getKey());
-				rep.setValue(reqWatch.getValue());
-				rep.setDirty(true);
-				
-				db.getResponseQueue().produce((Response<String, String>) rep);
-				dt.remove(key);
-				// 脏数据返回
-				return;
-			}
-		} else if (type == Request.RESET) {
+		} else if (type == Command.RESET) {
 			dt.reset();
-		} else if (type == Request.CLOSE) {
+		} else if (type == Command.CLOSE) {
 			dt.reset();
 			dt = null;
 		} else {
@@ -58,6 +52,21 @@ public class WatchHandler<K, V> extends AbstractHandler<K, V> implements Handler
 		next.process(req);
 	}
 
+	private void doDirtyRep(DbRequest<K, V> req, K key, DbRequest<K, V> reqWatch) {
+		DbResponse<K, V> rep = new DbResponse<>();
+		rep.setClientId(req.getClientId());
+		rep.setKey(reqWatch.getKey());
+		rep.setValue(reqWatch.getValue());
+		rep.setDirty(true);
+		
+		db.getResponseQueue().produce(rep);
+		dt.remove(key);
+	}
+	
+	private boolean isDirty(DbRequest<K, V> rw, long cid) {
+		return (rw != null && rw.isDirty() && cid == rw.getClientId());
+	}
+	
 	@Override
 	public void expire(K key) {
 		dt.remove(key);

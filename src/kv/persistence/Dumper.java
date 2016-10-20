@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.zip.CRC32;
 
+import kv.Type;
 import kv.db.KVDataBase;
 import kv.db.KVDataBase.Iterator;
 import kv.db.util.NodeFacade;
@@ -17,11 +18,11 @@ import kv.db.util.NodeFacade;
 /*
  *  日志，DataOutputStream写入UTF；
  * FileOutput-BufferedOutput-DataOutput逐层增强
- * aresKV-length-key-value-curr-expire-watch-dirty-eof-crc
+ * aresKV-length-int_type-key-int_type-value-curr-expire-watch-dirty-eof-crc
  * **/
-public class Dumper implements Runnable{
+public class Dumper<K, V> implements Runnable{
 	
-	private KVDataBase db;
+	private KVDataBase<K, V> db;
 	
 	private DateFormat df;
 	
@@ -43,7 +44,7 @@ public class Dumper implements Runnable{
 	
 	private Thread dump;
 	
-	public Dumper(KVDataBase db) {
+	public Dumper(KVDataBase<K, V> db) {
 		this.db = db;
 		isRunning = true;
 		df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
@@ -56,6 +57,7 @@ public class Dumper implements Runnable{
 		System.out.println("dump start");
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
 		while (isRunning) {
@@ -65,18 +67,22 @@ public class Dumper implements Runnable{
 				File f = createLog();
 				beforeContentWrite(f);
 				
-				NodeFacade<String, String> e;
+				NodeFacade<K, V> e;
 				StringBuilder sb = new StringBuilder();
+				@SuppressWarnings("rawtypes")
 				Iterator it = db.getIterator();
 				
 				while ((e = it.next()) != null) {
 					if (e.getKey() != null && e.getValue() != null) {
-						sb.append(e.getKey() + e.getValue());
-						out.writeUTF(e.getKey());
-						out.writeUTF(e.getValue());
+						sb.append(e.getKey().toString() + e.getValue().toString());
+						
+						writeType(e.getKey());
+						writeType(e.getValue());
+						
 						out.writeLong(e.getCurrent());
 						out.writeLong(e.getExpire());
 						out.writeBoolean(e.isIswatch());
+						out.writeLong(e.getCid());
 						out.writeBoolean(e.isDirty());
 					}
 				}
@@ -89,6 +95,41 @@ public class Dumper implements Runnable{
 			} 
 		}
 		System.out.println("dump stop");
+	}
+
+	private void writeType(Object obj) throws IOException {
+		String str = obj.toString();
+		if (obj instanceof String) {
+			out.writeInt(Type.STRING_TYPE);
+			out.writeUTF(str);
+		} else if (obj instanceof Integer) {
+			out.writeInt(Type.INT_TYPE);
+			out.writeInt(Integer.parseInt(str));
+		} else if (obj instanceof Byte) {
+			out.writeInt(Type.BYTE_TYPE);
+			out.writeByte(Byte.parseByte(str));
+		} else if (obj instanceof Float) {
+			out.writeInt(Type.FLOAT_TYPE);
+			out.writeFloat(Float.parseFloat(str));
+		} else if (obj instanceof Double) {
+			out.writeInt(Type.DOUBLE_TYPE);
+			out.writeDouble(Double.parseDouble(str));
+		} else if (obj instanceof Character) {
+			out.writeInt(Type.CHAR_TYPE);
+			out.writeUTF(str);
+		} else if (obj instanceof Boolean) {
+			out.writeInt(Type.BOOLEAN_TYPE);
+			out.writeBoolean(Boolean.parseBoolean(str));
+		} else if (obj instanceof Short) {
+			out.writeInt(Type.SHORT_TYPE);
+			out.writeShort(Short.parseShort(str));
+		} else if (obj instanceof Long) {
+			out.writeInt(Type.LONG_TYPE);
+			out.writeLong(Long.parseLong(str));
+		} else {
+			out.writeInt(Type.STRING_TYPE);
+			out.writeUTF(str);
+		}
 	}
 	
 	public void stop() {

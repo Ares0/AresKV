@@ -41,7 +41,7 @@ public class DataTable<K, V> {
         return e;
     }
 	
-    public V put(K key, V value) {
+    public V put(K key, V value, long cid) {
     	if (!isRehash) {
 			if (dt[0].isReSize()) {
 				isRehash = true;
@@ -52,10 +52,10 @@ public class DataTable<K, V> {
 		
     	V v;
 		if (isRehash) {
-			v = dt[1].put(key, value);
+			v = dt[1].put(key, value, cid);
 			rehash();
 		} else {
-			v = dt[0].put(key, value);
+			v = dt[0].put(key, value, cid);
 		}
         return v;
     }

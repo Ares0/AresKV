@@ -2,24 +2,24 @@ package kv.queue;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import kv.db.Request;
+import kv.db.DbRequest;
 
 /**
  * queue
  * */
 public class RequestLinkedQueue<K, V> implements RequestQueue<K, V> {
 	
-	private ConcurrentLinkedQueue<Request<K, V>> comQueue;
+	private ConcurrentLinkedQueue<DbRequest<K, V>> comQueue;
 	
 	public RequestLinkedQueue() {
 		comQueue = new ConcurrentLinkedQueue<>();
 	}
 	
-	public void produce(Request<K, V> com) {
+	public void produce(DbRequest<K, V> com) {
 		comQueue.offer(com);
 	}
 	
-	public Request<K, V> consume() {
+	public DbRequest<K, V> consume() {
 		return comQueue.poll();
 	}
 	

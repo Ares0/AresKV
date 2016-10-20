@@ -100,11 +100,11 @@ public class KVMap<K, V> {
         return null;
     }
 	
-    public V put(K key, V value) {
-        return putVal(hash(key), key, value);
+    public V put(K key, V value, long cid) {
+        return putVal(hash(key), key, value, cid);
     }
 	
-	private final V putVal(int hash, K key, V value) {
+	private final V putVal(int hash, K key, V value, long cid) {
 		 Node<K,V>[] tab; 
 		 Node<K,V> p; 
 		 int n, i;
@@ -112,7 +112,7 @@ public class KVMap<K, V> {
 		 if ((tab = table) == null || (n = tab.length) == 0)
 		     n = (tab = init()).length;
 		 if ((p = tab[i = (n - 1) & hash]) == null)
-		     tab[i] = newNode(hash, key, value, null);
+		     tab[i] = newNode(hash, key, value, null, cid);
 		 else {
 		     Node<K,V> e; K k;
 		     if (p.hash == hash &&
@@ -121,7 +121,7 @@ public class KVMap<K, V> {
 		     else {
 		         for (;;) {
 		             if ((e = p.next) == null) {
-		                 p.next = newNode(hash, key, value, null);
+		                 p.next = newNode(hash, key, value, null, cid);
 		                 break;
 		             }
 		             if (e.hash == hash &&
@@ -147,8 +147,8 @@ public class KVMap<K, V> {
 		return table;
 	}
 
-	private Node<K,V> newNode(int hash, K key, V value, Node<K,V> next) {
-        return new Node<>(hash, key, value, next);
+	private Node<K,V> newNode(int hash, K key, V value, Node<K,V> next, long cid) {
+        return new Node<>(hash, key, value, next, cid);
     }
 	
 	public V remove(Object key) {
@@ -195,7 +195,7 @@ public class KVMap<K, V> {
 
 	public void putNode(Node<K, V> e) {
 		 do {
-			 this.put(e.key, e.value);
+			 this.put(e.key, e.value, e.cid);
 		 } while ((e = e.next) != null);
 	}
 	
@@ -204,13 +204,15 @@ public class KVMap<K, V> {
         final int hash;
         final K key;
         V value;
+        long cid;
         Node<K, V> next;
 
-        public Node(int hash, K key, V value, Node<K, V> next) {
+        public Node(int hash, K key, V value, Node<K, V> next, long cid) {
             this.hash = hash;
             this.key = key;
             this.value = value;
             this.next = next;
+            this.cid = cid;
         }
 
         public final K getKey()        { return key; }
@@ -218,7 +220,16 @@ public class KVMap<K, V> {
         public final int getHash()     {return hash; }
         public Node<K, V> getNext()    { return next; }
         
-        public final int hashCode() {
+        
+        public long getCid() {
+			return cid;
+		}
+
+		public void setCid(long cid) {
+			this.cid = cid;
+		}
+
+		public final int hashCode() {
             return Objects.hashCode(key) ^ Objects.hashCode(value);
         }
 

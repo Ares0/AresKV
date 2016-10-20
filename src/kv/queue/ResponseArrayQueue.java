@@ -4,24 +4,25 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 
-import kv.db.Response;
+import kv.db.DbResponse;
 
 /*
  *  ArrayQueue
- * 响应是按请求顺序进行，所以使用ArrayDeque顺序处理。
+ * 响应按请求顺序，可以顺序处理；
+ * doubleCapacity可能造成内存过大。
  * **/
 public class ResponseArrayQueue<K, V> implements ResponseQueue<K, V> {
 
-	private Map<Long, ArrayDeque<Response<K, V>>> resopnses;
+	private Map<Long, ArrayDeque<DbResponse<K, V>>> resopnses;
 	
 	public ResponseArrayQueue() {
 		resopnses = new HashMap<>();
 	}
 	
 	@Override
-	public void produce(Response<K, V> rep) {
+	public void produce(DbResponse<K, V> rep) {
 		long cid = rep.getClientId();
-		ArrayDeque<Response<K, V>> reps = resopnses.get(cid);
+		ArrayDeque<DbResponse<K, V>> reps = resopnses.get(cid);
 		if (reps == null) {
 			reps = new ArrayDeque<>();
 			resopnses.put(cid, reps);
@@ -32,14 +33,14 @@ public class ResponseArrayQueue<K, V> implements ResponseQueue<K, V> {
 	}
 
 	@Override
-	public Response<K, V> consume(long cid) {
-		ArrayDeque<Response<K, V>> reps = resopnses.get(cid);
+	public DbResponse<K, V> consume(long cid) {
+		ArrayDeque<DbResponse<K, V>> reps = resopnses.get(cid);
 		if (reps == null) {
 			return null;
 		}
 		
 		if (reps.size() > 0) {
-			Response<K, V> rep = reps.poll();
+			DbResponse<K, V> rep = reps.poll();
 //			System.out.println("reponse consume " + rep.getKey());
 			return rep;
 		} else {

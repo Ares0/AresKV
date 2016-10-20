@@ -4,21 +4,21 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import kv.db.Response;
+import kv.db.DbResponse;
 
 // linkedlist
 public class ResponseLinkedQueue<K, V> implements ResponseQueue<K, V> {
 
-	private Map<Long, LinkedList<Response<K, V>>> resopnses;
+	private Map<Long, LinkedList<DbResponse<K, V>>> resopnses;
 	
 	public ResponseLinkedQueue() {
 		resopnses = new HashMap<>();
 	}
 	
 	@Override
-	public void produce(Response<K, V> rep) {
+	public void produce(DbResponse<K, V> rep) {
 		long cid = rep.getClientId();
-		LinkedList<Response<K, V>> reps = resopnses.get(cid);
+		LinkedList<DbResponse<K, V>> reps = resopnses.get(cid);
 		if (reps == null) {
 			reps = new LinkedList<>();
 			resopnses.put(cid, reps);
@@ -29,14 +29,14 @@ public class ResponseLinkedQueue<K, V> implements ResponseQueue<K, V> {
 	}
 
 	@Override
-	public Response<K, V> consume(long cid) {
-		LinkedList<Response<K, V>> reps = resopnses.get(cid);
+	public DbResponse<K, V> consume(long cid) {
+		LinkedList<DbResponse<K, V>> reps = resopnses.get(cid);
 		if (reps == null) {
 			return null;
 		}
 		
 		if (reps.size() > 0) {
-			Response<K, V> rep = reps.poll();
+			DbResponse<K, V> rep = reps.poll();
 //			System.out.println("reponse consume " + rep.getKey());
 			return rep;
 		} else {

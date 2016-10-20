@@ -7,14 +7,14 @@ public abstract class AbstractHandler<K, V> implements Handler<K, V> {
 
 	protected Handler<K, V> next;
 	
-	protected KVDataBase db;
+	protected KVDataBase<K, V> db;
 	
 	@Override
 	public void setNextHandler(Handler<K, V> h) {
 		this.next = h;
 	}
 	
-	public void setDataBase(KVDataBase db) {
+	public void setDataBase(KVDataBase<K, V> db) {
 		this.db = db;
 	}
 	

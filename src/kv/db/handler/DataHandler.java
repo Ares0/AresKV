@@ -1,10 +1,11 @@
 package kv.db.handler;
 
-import kv.db.Request;
-import kv.db.Response;
+import kv.Command;
+import kv.db.DbRequest;
+import kv.db.DbResponse;
 import kv.db.util.DataTable;
-import kv.db.util.NodeFacade;
 import kv.db.util.KVMap.Node;
+import kv.db.util.NodeFacade;
 
 /**
  *  DataHandler
@@ -14,24 +15,24 @@ public class DataHandler<K, V> extends AbstractHandler<K, V> implements Handler<
 
 	private DataTable<K, V> dt;
 	
-	private final NodeFacade<K, V> none = new NodeFacade<K, V>(0, (K)null, (V)null, null);
+	private final NodeFacade<K, V> none = new NodeFacade<K, V>(0, (K)null, (V)null, null, 0);
 	
 	public DataHandler() {
 		dt = new DataTable<>();
 	}
 	
-	public void process(Request<K, V> req) {
-		int type = req.getType();
+	public void process(DbRequest<K, V> req) {
+		int type = req.getCommand();
 		
-		if (type == Request.PUT) {
-			dt.put(req.getKey(), req.getValue());
-		} else if (type == Request.GET) {
+		if (type == Command.PUT) {
+			dt.put(req.getKey(), req.getValue(), req.getClientId());
+		} else if (type == Command.GET) {
 			this.get(req.getKey(), req.getClientId());
-		} else if (type == Request.REMOVE) {
+		} else if (type == Command.REMOVE) {
 			dt.remove(req.getKey());
-		} else if (type == Request.RESET) {
+		} else if (type == Command.RESET) {
 			dt.reset();
-		} else if (type == Request.CLOSE) {
+		} else if (type == Command.CLOSE) {
 			dt.reset();
 			dt = null;
 		} else {
@@ -44,9 +45,8 @@ public class DataHandler<K, V> extends AbstractHandler<K, V> implements Handler<
 		produceResponse(key, clientId, v);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void produceResponse(K key, long cid, V value) {
-		Response<K, V> rep = new Response<>();
+		DbResponse<K, V> rep = new DbResponse<>();
 		if (value == null) {
 			rep.setClientId(cid);
 			rep.setKey(key);
@@ -55,7 +55,7 @@ public class DataHandler<K, V> extends AbstractHandler<K, V> implements Handler<
 			rep.setKey(key);
 			rep.setValue(value);
 		}
-		db.getResponseQueue().produce((Response<String, String>) rep);
+		db.getResponseQueue().produce(rep);
 	}
 
 	@Override
@@ -75,11 +75,16 @@ public class DataHandler<K, V> extends AbstractHandler<K, V> implements Handler<
 		if (index <= 0 || index > Integer.MAX_VALUE) {
 			throw new IllegalArgumentException();
 		}
+		
 		if (index >= dt.size()) {
 			return null;
 		}
 		Node<K, V> e = dt.getIndex(index);
-		NodeFacade<K, V> n = new NodeFacade<K, V>(e.getHash(), e.getKey(), e.getValue(), e.getNext());
+		
+		NodeFacade<K, V> n = null;
+		if (e != null) {
+			n = new NodeFacade<K, V>(e.getHash(), e.getKey(), e.getValue(), e.getNext(), e.getCid());
+		}
 		return n == null ? none : n;
 	}
 

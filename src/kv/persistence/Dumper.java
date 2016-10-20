@@ -30,7 +30,7 @@ public class Dumper implements Runnable{
 	
 	private DataOutputStream out;
 	
-	private int DEFAULT_SLEEP_TIME = 5 * 60 * 1000;
+	private static int DEFAULT_SLEEP_TIME = 5 * 60 * 1000;
 	
 	private String DEFAULT_LOG_PREFIX_PATH = "G://";
 	
@@ -40,6 +40,8 @@ public class Dumper implements Runnable{
 	
 	private boolean isRunning;
 	
+	private Thread dump;
+	
 	public Dumper(KVDataBase db) {
 		this.db = db;
 		isRunning = true;
@@ -47,8 +49,10 @@ public class Dumper implements Runnable{
 	}
 	
 	public void start() {
-		Thread t = new Thread(this);
-		t.start();
+		dump = new Thread(this);
+		dump.setName("dump-thread");
+		dump.start();
+		System.out.println("dump start");
 	}
 	
 	@Override
@@ -76,17 +80,27 @@ public class Dumper implements Runnable{
 				
 				afterContentWrite(f, sb);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				System.out.println("dump interrupt");
 			} catch (IOException e1) {
 				e1.printStackTrace();
-			} finally {
-				release();
-			}
+			} 
 		}
+		System.out.println("dump stop");
 	}
 	
 	public void stop() {
 		isRunning = false;
+		dump.interrupt();
+		
+		try {
+			if (out != null) {
+				out.close();
+				bas.close();
+				fs.close(); 
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private File createLog() throws IOException {
@@ -112,17 +126,8 @@ public class Dumper implements Runnable{
 		CRC32 crc = new CRC32();
 		crc.update(sb.toString().getBytes());
 		out.writeLong(crc.getValue());
+		
+		out.flush();
 	}
-
-	private void release() {
-		try {
-			out.flush();
-			
-			out.close();
-			bas.close();
-			fs.close(); 
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+	
 }

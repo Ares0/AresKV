@@ -1,8 +1,11 @@
 package kv.db;
 
-import kv.KVConnection;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import kv.KVConnectionCondition;
 import kv.db.KVMap.Node;
-import kv.persistence.Dumper;
 import kv.queue.RequestLinkedQueue;
 import kv.queue.RequestQueue;
 import kv.queue.ResponseArrayQueue;
@@ -13,17 +16,15 @@ import kv.synchro.Synchronous;
 /**
  *  database
  * */
-public class KVDataBase implements Runnable{
+public class KVDataBaseCondition implements Runnable{
 
-	private static KVDataBase db;
+	private static KVDataBaseCondition db;
 	
 	private KVMap<String, String>[] dt;
 	
 	private int rehashIndex;
 	
 	private boolean isRehash;
-	
-	private Dumper dump;
 	
 	private RequestQueue requests;
 	
@@ -39,22 +40,31 @@ public class KVDataBase implements Runnable{
 	
 	private int spinCount;
 	
-	private KVDataBase(int initCapacity) {
+	private Lock lock;
+	
+	public Condition reqCondition;
+	
+	public Condition repCondition;
+	
+	private KVDataBaseCondition(int initCapacity) {
 		this(initCapacity, new RequestLinkedQueue(), new ResponseArrayQueue(), new SleepSynchronous());
 	}
 	
 	@SuppressWarnings("unchecked")
-	private KVDataBase(int initCapacity, RequestQueue req, ResponseQueue rep, Synchronous syn) {
+	private KVDataBaseCondition(int initCapacity, RequestQueue req, ResponseQueue rep, Synchronous syn) {
 		clientId = 1;
 		rehashIndex = -1;
 		
 		dt = new KVMap[2];
 		dt[0] = new KVMap<>(initCapacity);
-		dump = new Dumper(this);
 		
 		this.syn = syn;
 		this.requests = req;
 		this.responses = rep;
+		
+		lock = new ReentrantLock();
+		reqCondition = lock.newCondition();
+		repCondition = lock.newCondition();
 		
 		this.isRunning = true;
 		this.isRehash = false;
@@ -62,21 +72,21 @@ public class KVDataBase implements Runnable{
 		this.start();
 	}
 
-	public static KVDataBase getDatabase() {
-		return getDatabase(KVMap.DEFAULT_INITIAL_CAPACITY, null, null, null);
+	public static KVDataBaseCondition getDataBase() {
+		return getDataBase(KVMap.DEFAULT_INITIAL_CAPACITY, null, null, null);
 	}
 	
 	// getDatabase
-	public static KVDataBase getDatabase(int initCapacity, RequestQueue req, ResponseQueue rep, Synchronous syn) {
+	public static KVDataBaseCondition getDataBase(int initCapacity, RequestQueue req, ResponseQueue rep, Synchronous syn) {
 		if (db != null) {
 			return db;
 		}
-		synchronized (KVDataBase.class) {
+		synchronized (KVDataBaseCondition.class) {
 			if (db == null) {
 				if (req == null || syn == null) {
-					db = new KVDataBase(initCapacity);
+					db = new KVDataBaseCondition(initCapacity);
 				} else {
-					db = new KVDataBase(initCapacity, req, rep, syn);
+					db = new KVDataBaseCondition(initCapacity, req, rep, syn);
 				}
 			}
 		}
@@ -91,14 +101,62 @@ public class KVDataBase implements Runnable{
 		return this.responses;
 	}
 	
+	private int reqWaitCount;
+	
+	private int reqSignalCount;
+	
+	private int repWaitCount;
+	
+	private int repSignalCount;
+	
+	public void doReqWait() {
+		try {
+			synchronized (reqCondition) {
+//				reqCondition.await();
+				reqCondition.wait();
+				reqWaitCount++;
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void doReqSignal() {
+		synchronized (reqCondition) {
+//			reqCondition.signal();
+			reqCondition.notify();
+			reqSignalCount++;
+		}
+	}
+	
+	public void doRepWait() {
+		try {
+			synchronized (repCondition) {
+//				repCondition.await();
+				repCondition.wait();
+				repWaitCount++;
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void doRepSignal() {
+		synchronized (repCondition) {
+//			repCondition.signalAll();
+			repCondition.notify();
+			repSignalCount++;
+		}
+	}
+	
 	// Connection
-	public KVConnection getConnection() {
-		KVConnection con = new KVConnection(this);
+	public KVConnectionCondition getConnection() {
+		KVConnectionCondition con = new KVConnectionCondition(this);
 		return con;
 	}
 	
-	public KVConnection getConnection(Synchronous syn) {
-		KVConnection con = new KVConnection(this, syn);
+	public KVConnectionCondition getConnection(Synchronous syn) {
+		KVConnectionCondition con = new KVConnectionCondition(this, syn);
 		return con;
 	}
 
@@ -142,8 +200,10 @@ public class KVDataBase implements Runnable{
 			value = dt[0].get(key);
 		}
 		
-		// send response
 		produceResponse(key, cid, value);
+		
+		doRepSignal();
+//		System.out.println("rep signal " + key);
 	}
 
 	private void produceResponse(String key, long cid, String value) {
@@ -205,13 +265,10 @@ public class KVDataBase implements Runnable{
 		dbTh.setName("db-thread");
 		dbTh.start();
 		
-		dump.start();
 		System.out.println("db start");
 	}
 	
 	private void stop() {
-		dump.stop();
-		
 		dt = null;
 		requests = null;
 		responses = null;
@@ -227,6 +284,9 @@ public class KVDataBase implements Runnable{
 				syn.doSynchronous();
 				spinCount++;
 			}
+			
+			System.out.println(reqWaitCount + "-" + reqSignalCount);
+			System.out.println(repWaitCount + "-" + repSignalCount);
 			
 			if (req.getType() == Request.PUT) {
 				this.put(req.getKey(), req.getValue());

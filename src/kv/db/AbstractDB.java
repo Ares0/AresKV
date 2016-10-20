@@ -9,7 +9,7 @@ import kv.queue.RequestQueue;
 import kv.queue.ResponseQueue;
 import kv.synchro.Synchronous;
 import kv.utils.KVObject;
-import kv.utils.NodeFacade;
+import kv.utils.KVNode;
 
 public abstract class AbstractDB implements KVDataBase {
 
@@ -86,12 +86,14 @@ public abstract class AbstractDB implements KVDataBase {
 	protected abstract void prepareHandlers(); 
 
 	public void stop() {
+		isRunning = false;
+		
 		dump.stop();
 		connector.stop();
 		
 		requests = null;
 		responses = null;
-		isRunning = false;
+		handler = null;
 	}
 	
 	// iterator
@@ -104,7 +106,7 @@ public abstract class AbstractDB implements KVDataBase {
 			return handler.hasNext(index);
 		}
 		
-		public NodeFacade<String, KVObject> next() {
+		public KVNode<String, KVObject> next() {
 			index++;
 			return handler.next(index);
 		}

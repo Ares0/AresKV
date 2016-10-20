@@ -10,7 +10,7 @@ import kv.utils.DataTable;
  *  WatchHandler
  * Get时如果发现有，就返回失败。
  * */ 
-public class WatchHandler extends AbstractHandler implements Handler {
+public class WatchHandler extends AbstractHandler {
 	
 	private DataTable<String, DbRequest> dt;
 	
@@ -24,35 +24,33 @@ public class WatchHandler extends AbstractHandler implements Handler {
 		DbRequest reqWatch = dt.get(key);
 		long cid = req.getClientId();
 		
-		if (type == Command.PUT || type == Command.REMOVE) {
+		if (type == Command.PUT 
+				|| type == Command.REMOVE) {
 			if (reqWatch == null && req.isWatch()) {
 				dt.put(key, req, cid);
 			} else if (isDirty(reqWatch, cid)) {
-				doDirtyRep(req, key, reqWatch);
-				return;  // 脏数据返回
+				doDirtyResponse(req, key, reqWatch);
+				return;            // 脏数据返回
 			} else if (reqWatch != null) {
 				req.setDirty(true);
 				dt.put(key, req, cid); 
 			}
 		} else if (type == Command.GET) {
 			if (isDirty(reqWatch, cid)) {
-				doDirtyRep(req, key, reqWatch);
-				return;  // 脏数据返回
+				doDirtyResponse(req, key, reqWatch);
+				return;            // 脏数据返回
 			}
 		} else if (type == Command.RESET) {
 			dt.reset();
 		} else if (type == Command.CLOSE) {
 			dt.reset();
 			dt = null;
-		} else {
-			throw new IllegalArgumentException();
 		}
 		
-		// 继续处理链
-		next.process(req);
+		next.process(req);   // 继续处理链
 	}
 
-	private void doDirtyRep(DbRequest req, String key, DbRequest reqWatch) {
+	private void doDirtyResponse(DbRequest req, String key, DbRequest reqWatch) {
 		DbResponse rep = new DbResponse();
 		rep.setClientId(req.getClientId());
 		rep.setKey(reqWatch.getKey());

@@ -2,7 +2,7 @@ package kv.db.handler;
 
 import kv.KVDataBase;
 import kv.utils.KVObject;
-import kv.utils.NodeFacade;
+import kv.utils.KVNode;
 
 public abstract class AbstractHandler implements Handler {
 
@@ -20,7 +20,7 @@ public abstract class AbstractHandler implements Handler {
 	}
 	
 	@Override
-	public NodeFacade<String, KVObject> next(int index) {
+	public KVNode<String, KVObject> next(int index) {
 		if (index <= 0 || index > Integer.MAX_VALUE) {
 			throw new IllegalArgumentException();
 		}
@@ -32,7 +32,7 @@ public abstract class AbstractHandler implements Handler {
 		if (index <= 0 || index > Integer.MAX_VALUE) {
 			throw new IllegalArgumentException();
 		}
-		return true;
+		return next.hasNext(index);
 	}
 
 	@Override

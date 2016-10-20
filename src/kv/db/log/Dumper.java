@@ -13,8 +13,8 @@ import java.util.zip.CRC32;
 import kv.KVDataBase;
 import kv.db.AbstractDB.Iterator;
 import kv.utils.KVObject;
-import kv.utils.NodeFacade;
-import kv.utils.Type;
+import kv.utils.KVNode;
+import kv.utils.DataType;
 
 /*
  *  »’÷æ£¨DataOutputStream–¥»ÎUTF£ª
@@ -68,7 +68,7 @@ public class Dumper implements Runnable {
 				File f = createLog();
 				beforeContentWrite(f);
 
-				NodeFacade<String, KVObject> e;
+				KVNode<String, KVObject> e;
 				StringBuilder sb = new StringBuilder();
 				Iterator it = db.getIterator();
 
@@ -104,34 +104,34 @@ public class Dumper implements Runnable {
 	private void writeType(Object obj) throws IOException {
 		String str = obj.toString();
 		if (obj instanceof String) {
-			out.writeInt(Type.STRING_TYPE);
+			out.writeInt(DataType.STRING_TYPE);
 			out.writeUTF(str);
 		} else if (obj instanceof Integer) {
-			out.writeInt(Type.INT_TYPE);
+			out.writeInt(DataType.INT_TYPE);
 			out.writeInt(Integer.parseInt(str));
 		} else if (obj instanceof Byte) {
-			out.writeInt(Type.BYTE_TYPE);
+			out.writeInt(DataType.BYTE_TYPE);
 			out.writeByte(Byte.parseByte(str));
 		} else if (obj instanceof Float) {
-			out.writeInt(Type.FLOAT_TYPE);
+			out.writeInt(DataType.FLOAT_TYPE);
 			out.writeFloat(Float.parseFloat(str));
 		} else if (obj instanceof Double) {
-			out.writeInt(Type.DOUBLE_TYPE);
+			out.writeInt(DataType.DOUBLE_TYPE);
 			out.writeDouble(Double.parseDouble(str));
 		} else if (obj instanceof Character) {
-			out.writeInt(Type.CHAR_TYPE);
+			out.writeInt(DataType.CHAR_TYPE);
 			out.writeUTF(str);
 		} else if (obj instanceof Boolean) {
-			out.writeInt(Type.BOOLEAN_TYPE);
+			out.writeInt(DataType.BOOLEAN_TYPE);
 			out.writeBoolean(Boolean.parseBoolean(str));
 		} else if (obj instanceof Short) {
-			out.writeInt(Type.SHORT_TYPE);
+			out.writeInt(DataType.SHORT_TYPE);
 			out.writeShort(Short.parseShort(str));
 		} else if (obj instanceof Long) {
-			out.writeInt(Type.LONG_TYPE);
+			out.writeInt(DataType.LONG_TYPE);
 			out.writeLong(Long.parseLong(str));
 		} else {
-			out.writeInt(Type.STRING_TYPE);
+			out.writeInt(DataType.STRING_TYPE);
 			out.writeUTF(str);
 		}
 	}

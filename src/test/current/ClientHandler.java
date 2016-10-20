@@ -6,17 +6,17 @@ import kv.Command;
 import kv.net.RemoteRequest;
 import kv.net.RemoteResponse;
 import kv.utils.KVObject;
-import kv.utils.Type;
+import kv.utils.DataType;
 
 public class ClientHandler extends ChannelInboundHandlerAdapter {
 	
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		KVObject val = new KVObject();
-		val.setType(Type.STRING_TYPE);
+		val.setType(DataType.STRING_TYPE);
 		val.setValue("1");
 		
         RemoteRequest rq = new RemoteRequest(Command.PUT,
-        		Type.STRING_TYPE, Type.STRING_TYPE, "1", val, 0);
+        		DataType.STRING_TYPE, DataType.STRING_TYPE, "fafhk", val, 0);
         ctx.writeAndFlush(rq);
     }
 
@@ -24,7 +24,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             throws Exception {
     	System.out.println(((RemoteResponse)msg).getKey());
         System.out.println(((RemoteResponse)msg).getValue());
-        ctx.flush();
+        System.out.println(((RemoteResponse)msg).isMove());
+        System.out.println(((RemoteResponse)msg).getValue().getValue());
+        ctx.close();
     }
 
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)

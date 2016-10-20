@@ -4,7 +4,7 @@ import kv.Command;
 import kv.db.DbRequest;
 import kv.db.DbResponse;
 import kv.utils.DataTable;
-import kv.utils.NodeFacade;
+import kv.utils.KVNode;
 import kv.utils.KVMap.Node;
 import kv.utils.KVObject;
 
@@ -13,11 +13,11 @@ import kv.utils.KVObject;
  *  ExpireHandler
  * next时判断存在&&过期，符合条件则返回。
  * */
-public class ExpireHandler extends AbstractHandler implements Handler {
+public class ExpireHandler extends AbstractHandler {
 	
 	private DataTable<String, DbRequest> dt;
 	
-	private final NodeFacade<String, KVObject> none = new NodeFacade<>(0, null, null, null, 0);
+	private final KVNode<String, KVObject> none = new KVNode<>(0, null, null, null, 0);
 	
 	public ExpireHandler() {
 		dt = new DataTable<>();
@@ -28,18 +28,18 @@ public class ExpireHandler extends AbstractHandler implements Handler {
 		int type = req.getCommand();
 		long current = System.currentTimeMillis();
 		
-		if (type == Command.PUT && req.getExpireTime() != 0) {
+		if (type == Command.PUT 
+				&& req.getExpireTime() != 0) {
 			req.setCurrentTime(current);
 			dt.put(key, req, req.getClientId());
 		} else if (type == Command.GET) {
 			DbRequest reqExp = dt.get(key);
 			if (reqExp != null && isExpire(reqExp, current)) {
-				DbResponse rep = expireReponse(req);
+				DbResponse rep = doExpireReponse(req);
 				
 				db.getResponseQueue().produce(rep);
 				next.expire(key);
-				// 过期返回
-				return;
+				return;           // 过期返回
 			}
 		} else if (type == Command.REMOVE) {
 			dt.remove(key);
@@ -48,14 +48,9 @@ public class ExpireHandler extends AbstractHandler implements Handler {
 		} else if (type == Command.CLOSE) {
 			dt.reset();
 			dt = null;
-		} else if (type == Command.PUT) {
-			;
-		} else {
-			throw new IllegalArgumentException();
 		}
 		
-		// 继续处理链
-		next.process(req);
+		next.process(req);   // 继续处理链
 	}
 	
 	private boolean isExpire(DbRequest req, long current) {
@@ -68,7 +63,7 @@ public class ExpireHandler extends AbstractHandler implements Handler {
 		return false;
 	}
 
-	public NodeFacade<String, KVObject> next(int index) {
+	public KVNode<String, KVObject> next(int index) {
 		if (index <= 0 || index > Integer.MAX_VALUE) {
 			throw new IllegalArgumentException();
 		}
@@ -94,7 +89,7 @@ public class ExpireHandler extends AbstractHandler implements Handler {
 		dt.remove(key);
 	}
 	
-	private DbResponse expireReponse(DbRequest req) {
+	private DbResponse doExpireReponse(DbRequest req) {
 		String key = req.getKey();
 		
 		DbResponse rep = new DbResponse();

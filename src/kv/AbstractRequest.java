@@ -6,19 +6,19 @@ public abstract class AbstractRequest {
 	
 	protected int valuetype;
 
-	public int getKeytype() {
+	public int getKeyType() {
 		return keytype;
 	}
 
-	public void setKeytype(int keytype) {
+	public void setKeyType(int keytype) {
 		this.keytype = keytype;
 	}
 
-	public int getValuetype() {
+	public int getValueType() {
 		return valuetype;
 	}
 
-	public void setValuetype(int valuetype) {
+	public void setValueType(int valuetype) {
 		this.valuetype = valuetype;
 	}
 	

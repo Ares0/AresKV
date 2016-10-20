@@ -1,7 +1,7 @@
 package kv.db.handler;
 
 import kv.utils.KVObject;
-import kv.utils.NodeFacade;
+import kv.utils.KVNode;
 import kv.KVDataBase;
 import kv.db.DbRequest;
 
@@ -16,7 +16,7 @@ public interface Handler {
 	
 	boolean hasNext(int index);
 	
-	NodeFacade<String, KVObject> next(int index);
+	KVNode<String, KVObject> next(int index);
 	
 	void expire(String key);
 	

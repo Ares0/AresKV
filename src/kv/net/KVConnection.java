@@ -11,7 +11,7 @@ import kv.utils.KVObject;
 /**
  *   Adapter
  *  不同的客户端不断连接过来，Map会很大且难以回收；
- * 由客户端保存clientId、服务器只生成id。
+ * 客户端保存clientId、服务器只生成顺序id。
  * */
 public class KVConnection {
 	
@@ -34,91 +34,114 @@ public class KVConnection {
 		int com = req.getCommand();
 		String ke = req.getKey();
 		KVObject val = req.getValue();
+		
 		long ex = req.getExpireTime();
 		boolean wa = req.isWatch();
 		long cid = req.getClientId();
 		
-		RemoteResponse rep = new RemoteResponse();
+		RemoteResponse rep = null;
 		
 		if (com == Command.PUT) {
 			if (ex == 0 && !wa) {
-				this.put(ke, val, cid, req);
+				rep = put(ke, val, cid, req);
 			} else if (ex != 0 && !wa) {
-				this.put(ke, val, wa, cid, req);
+				rep = put(ke, val, wa, cid, req);
 			} else if (ex != 0 && wa) {
-				this.put(ke, val, ex, wa, cid, req);
+				rep = put(ke, val, ex, wa, cid, req);
 			} else {
 				System.out.println("connection wrong argument" + ke + cid);
 			}
-			rep.setKey(ke);
 		} else if (com == Command.GET) {
-			KVObject a = this.get(ke, cid, req);
-			rep.setKey(ke);
-			rep.setValue(a);
+			rep = get(ke, cid, req);
 		} else if (com == Command.REMOVE) {
-			this.remove(ke, cid, req);
-			rep.setKey(ke);
+			rep = remove(ke, cid, req);
 		} else if (com == Command.RESET) {
-			this.reset(cid, req);
-			rep.setKey(ke);
+			rep = reset(cid, req);
 		} else if (com == Command.CLOSE) {
-			this.close(cid, req);
-			rep.setKey(ke);
+			rep = close(cid, req);
 		} else {
 			System.out.println("connection wrong argument" + ke + cid);
 		}
 		return rep;
 	}
 	
-	public void put(String ke, KVObject val, long cid, RemoteRequest req) {
-		db.getRequestQueue().produce(new DbRequest(Command.PUT, req.getKeytype(), req.getValuetype(), ke, val, getClientId(cid)));
-	}
-	
-	public void put(String ke, KVObject val, long expire, long cid, RemoteRequest req) {
-		DbRequest r = new DbRequest(Command.PUT,req.getKeytype(), req.getValuetype(),  ke, val, getClientId(cid));
-		r.setExpireTime(expire);
-		db.getRequestQueue().produce(r);
-	}
-	
-	public void put(String key, KVObject value, boolean watch, long cid, RemoteRequest req) {
-		DbRequest r = new DbRequest(Command.PUT, req.getKeytype(), req.getValuetype(), key, value, getClientId(cid));
-		r.setWatch(watch);
-		db.getRequestQueue().produce(r);
-	}
-	
-	public void put(String ke, KVObject val, long expire, boolean watch, long cid, RemoteRequest req) {
-		DbRequest r = new DbRequest(Command.PUT, req.getKeytype(), req.getValuetype(), ke, val, getClientId(cid));
-		r.setExpireTime(expire);
-		r.setWatch(watch);
-		db.getRequestQueue().produce(r);
-	}
-	
-	//  一直到有值产生
-	// 保存Thread对用的clientId
-	public KVObject get(String ke, long cid, RemoteRequest req) {
+	public RemoteResponse put(String ke, KVObject val, long cid, RemoteRequest req) {
 		long clientId = getClientId(cid);
-		db.getRequestQueue().produce(new DbRequest(Command.GET, req.getKeytype(), req.getValuetype(), ke, null, clientId));
 		
-		DbResponse value;
-		while ((value = db.getResponseQueue().consume(clientId)) == null) {
-			syn.doSynchronous();
-			spinCount++;
-		}
+		db.getRequestQueue().produce(new DbRequest(Command.PUT,
+				req.getKeyType(), req.getValueType(), ke, val, clientId));
 		
-		return value.getValue();
+		RemoteResponse rep = prepareRemoteRep(clientId);
+		return rep;
 	}
 	
-	public void remove(String ke, long cid, RemoteRequest req) {
-		db.getRequestQueue().produce(new DbRequest(Command.GET, req.getKeytype(), req.getValuetype(), ke, null, getClientId(cid)));
+	public RemoteResponse put(String key, KVObject value, boolean watch, long cid, RemoteRequest req) {
+		long clientId = getClientId(cid);
+		
+		DbRequest r = new DbRequest(Command.PUT, req.getKeyType(),
+				req.getValueType(), key, value, clientId);
+		
+		r.setWatch(watch);
+		db.getRequestQueue().produce(r);
+		
+		RemoteResponse rep = prepareRemoteRep(clientId);
+		return rep;
 	}
 	
-	public void reset(long cid, RemoteRequest req) {
-		db.getRequestQueue().produce(new DbRequest(Command.RESET, req.getKeytype(), req.getValuetype(), null, null, getClientId(cid)));
+	public RemoteResponse put(String ke, KVObject val, long expire, boolean watch, long cid, RemoteRequest req) {
+		long clientId = getClientId(cid);
+		
+		DbRequest r = new DbRequest(Command.PUT, req.getKeyType(),
+				req.getValueType(), ke, val, clientId);
+		
+		r.setExpireTime(expire);
+		r.setWatch(watch);
+		db.getRequestQueue().produce(r);
+		
+		RemoteResponse rep = prepareRemoteRep(clientId);
+		return rep;
 	}
 	
-	public void close(long cid, RemoteRequest req) {
+	public RemoteResponse get(String ke, long cid, RemoteRequest req) {
+		long clientId = getClientId(cid);
+		
+		db.getRequestQueue().produce(new DbRequest(Command.GET,
+				req.getKeyType(), req.getValueType(), ke, null, clientId));
+		
+		RemoteResponse rep = prepareRemoteRep(clientId);
+		return rep;
+	}
+	
+	public RemoteResponse remove(String ke, long cid, RemoteRequest req) {
+		long clientId = getClientId(cid);
+		
+		db.getRequestQueue().produce(new DbRequest(Command.GET,
+				req.getKeyType(), req.getValueType(), ke, null, clientId));
+		
+		RemoteResponse rep = prepareRemoteRep(clientId);
+		return rep;
+	}
+	
+	public RemoteResponse reset(long cid, RemoteRequest req) {
+		long clientId = getClientId(cid);
+		
+		db.getRequestQueue().produce(new DbRequest(Command.RESET,
+				req.getKeyType(), req.getValueType(), null, null, clientId));
+		
+		RemoteResponse rep = prepareRemoteRep(clientId);
+		return rep;
+	}
+	
+	public RemoteResponse close(long cid, RemoteRequest req) {
 		System.out.println("connection spin " + spinCount);
-		db.getRequestQueue().produce(new DbRequest(Command.CLOSE, req.getKeytype(), req.getValuetype(), null, null, getClientId(cid)));
+		
+		long clientId = getClientId(cid);
+		
+		db.getRequestQueue().produce(new DbRequest(Command.CLOSE,
+				req.getKeyType(), req.getValueType(), null, null, clientId));
+		
+		RemoteResponse rep = prepareRemoteRep(clientId);
+		return rep;
 	}
 	
 	// cid sid
@@ -127,6 +150,30 @@ public class KVConnection {
 			cid = db.getClientId();
 		}
 		return cid;
+	}
+
+	private RemoteResponse prepareRemoteRep(long clientId) {
+		DbResponse dp = getDbResponse(clientId);
+		RemoteResponse rep = new RemoteResponse();
+		
+		rep.setClientId(dp.getClientId());
+		rep.setDirty(dp.isDirty());
+		rep.setKey(dp.getKey());
+		rep.setKeyType(dp.getKeyType());
+		rep.setMove(dp.isMove());
+		rep.setValue(dp.getValue());
+		rep.setValueType(dp.getValueType());
+		return rep;
+	}
+	
+	// cusume
+	private DbResponse getDbResponse(long cid) {
+		DbResponse dp;
+		while ((dp = db.getResponseQueue().consume(cid)) == null) {
+			syn.doSynchronous();
+			spinCount++;
+		}
+		return dp;
 	}
 	
 }

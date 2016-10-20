@@ -1,10 +1,9 @@
 
    
    
-      支持多线程操作，通过生产&消费实现；
- connection-kvdatabase为请求-响应的生产-消费方。
- 
-      使用blockingQueue即可，不用自己就行控制。
+      支持缓存有效期、watch事务；
+  DB调用处理链，ExpireHandler、WatchHandler、DataHandler。
+  更新dump的文件结构，添加NodeFacade。
    
-    spin模式下，175万个TPS；
+     空转频繁，db、con空转百万级别；
    直接访问Map，存在写入频繁，造成dump一直完不成问题。

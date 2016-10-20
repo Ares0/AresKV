@@ -7,18 +7,18 @@ import java.util.Map;
 import kv.db.Response;
 
 // linkedlist
-public class ResponseLinkedQueue implements ResponseQueue {
+public class ResponseLinkedQueue<K, V> implements ResponseQueue<K, V> {
 
-	private Map<Long, LinkedList<Response<String, String>>> resopnses;
+	private Map<Long, LinkedList<Response<K, V>>> resopnses;
 	
 	public ResponseLinkedQueue() {
 		resopnses = new HashMap<>();
 	}
 	
 	@Override
-	public void produce(Response<String, String> rep) {
+	public void produce(Response<K, V> rep) {
 		long cid = rep.getClientId();
-		LinkedList<Response<String, String>> reps = resopnses.get(cid);
+		LinkedList<Response<K, V>> reps = resopnses.get(cid);
 		if (reps == null) {
 			reps = new LinkedList<>();
 			resopnses.put(cid, reps);
@@ -29,14 +29,14 @@ public class ResponseLinkedQueue implements ResponseQueue {
 	}
 
 	@Override
-	public Response<String, String> consume(long cid) {
-		LinkedList<Response<String, String>> reps = resopnses.get(cid);
+	public Response<K, V> consume(long cid) {
+		LinkedList<Response<K, V>> reps = resopnses.get(cid);
 		if (reps == null) {
 			return null;
 		}
 		
 		if (reps.size() > 0) {
-			Response<String, String> rep = reps.poll();
+			Response<K, V> rep = reps.poll();
 //			System.out.println("reponse consume " + rep.getKey());
 			return rep;
 		} else {

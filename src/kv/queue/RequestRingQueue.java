@@ -11,7 +11,7 @@ import kv.synchro.Synchronous;
  *  queue
  * 环状数组实现。
  * */
-public class RequestRingQueue implements RequestQueue{
+public class RequestRingQueue<K, V> implements RequestQueue<K, V> {
 	
 	private int capacity;
 	
@@ -19,7 +19,7 @@ public class RequestRingQueue implements RequestQueue{
 	
 	private volatile int readIndex;
 	
-	private Request<String, String>[] ringBuffer;
+	private Request<K, V>[] ringBuffer;
 	
 	private Lock lock;
 	
@@ -49,7 +49,7 @@ public class RequestRingQueue implements RequestQueue{
 	}
 	
 	// produce
-	public void produce(Request<String, String> com) {
+	public void produce(Request<K, V> com) {
 		lock.lock();
 		
 		int ringReadIndex;
@@ -78,7 +78,7 @@ public class RequestRingQueue implements RequestQueue{
 	}
 
 	// consume
-	public Request<String, String> consume() {
+	public Request<K, V> consume() {
 		
 		while (readIndex ==0 && writeIndex == 0) {
 			readSyn.doSynchronous();

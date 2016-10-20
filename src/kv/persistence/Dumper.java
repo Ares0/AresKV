@@ -11,12 +11,13 @@ import java.util.Date;
 import java.util.zip.CRC32;
 
 import kv.db.KVDataBase;
-import kv.db.KVMap.Node;
+import kv.db.KVDataBase.Iterator;
+import kv.db.util.NodeFacade;
 
 /*
  *  日志，DataOutputStream写入UTF；
  * FileOutput-BufferedOutput-DataOutput逐层增强
- * aresKV - keyLength - key - valueLength - value - eof - crc
+ * aresKV-length-key-value-curr-expire-watch-dirty-eof-crc
  * **/
 public class Dumper implements Runnable{
 	
@@ -64,17 +65,19 @@ public class Dumper implements Runnable{
 				File f = createLog();
 				beforeContentWrite(f);
 				
+				NodeFacade<String, String> e;
 				StringBuilder sb = new StringBuilder();
-				Node<String, String>[] nodes = db.getNodes();
+				Iterator it = db.getIterator();
 				
-				if (nodes == null || nodes.length <= 0)
-					continue;
-				
-				for (Node<String, String> e : nodes) {
-					if (e != null) {
+				while ((e = it.next()) != null) {
+					if (e.getKey() != null && e.getValue() != null) {
 						sb.append(e.getKey() + e.getValue());
 						out.writeUTF(e.getKey());
 						out.writeUTF(e.getValue());
+						out.writeLong(e.getCurrent());
+						out.writeLong(e.getExpire());
+						out.writeBoolean(e.isIswatch());
+						out.writeBoolean(e.isDirty());
 					}
 				}
 				

@@ -7,19 +7,19 @@ import kv.db.Request;
 /**
  * queue
  * */
-public class RequestLinkedQueue implements RequestQueue{
+public class RequestLinkedQueue<K, V> implements RequestQueue<K, V> {
 	
-	private ConcurrentLinkedQueue<Request<String, String>> comQueue;
+	private ConcurrentLinkedQueue<Request<K, V>> comQueue;
 	
 	public RequestLinkedQueue() {
 		comQueue = new ConcurrentLinkedQueue<>();
 	}
 	
-	public void produce(Request<String, String> com) {
+	public void produce(Request<K, V> com) {
 		comQueue.offer(com);
 	}
 	
-	public Request<String, String> consume() {
+	public Request<K, V> consume() {
 		return comQueue.poll();
 	}
 	

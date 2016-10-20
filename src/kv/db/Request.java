@@ -24,6 +24,14 @@ public class Request<K, V> {
 	
 	private long clientId;
 	
+	private boolean watch;
+	
+	private boolean dirty;
+	
+	private long currentTime;
+	
+	private long expireTime;
+	
 	public Request(int type, K key, V value, long id) {
 		if (type != PUT && type != GET && type != REMOVE && type != RESET && type != CLOSE) {
 			throw new IllegalArgumentException();
@@ -64,6 +72,38 @@ public class Request<K, V> {
 
 	public void setClientId(long l) {
 		this.clientId = l;
+	}
+
+	public boolean isWatch() {
+		return watch;
+	}
+
+	public void setWatch(boolean watch) {
+		this.watch = watch;
+	}
+
+	public boolean isDirty() {
+		return dirty;
+	}
+
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
+	}
+
+	public long getExpireTime() {
+		return expireTime;
+	}
+
+	public void setExpireTime(long expireTime) {
+		this.expireTime = expireTime;
+	}
+
+	public long getCurrentTime() {
+		return currentTime;
+	}
+
+	public void setCurrentTime(long currentTime) {
+		this.currentTime = currentTime;
 	}
 	
 }

@@ -1,7 +1,12 @@
 package kv.db;
 
 import kv.KVConnection;
-import kv.db.KVMap.Node;
+import kv.db.handler.DataHandler;
+import kv.db.handler.ExpireHandler;
+import kv.db.handler.Handler;
+import kv.db.handler.WatchHandler;
+import kv.db.util.KVMap;
+import kv.db.util.NodeFacade;
 import kv.persistence.Dumper;
 import kv.queue.RequestLinkedQueue;
 import kv.queue.RequestQueue;
@@ -17,39 +22,31 @@ public class KVDataBase implements Runnable{
 
 	private static KVDataBase db;
 	
-	private KVMap<String, String>[] dt;
+	private RequestQueue<String, String> requests;
 	
-	private int rehashIndex;
-	
-	private boolean isRehash;
-	
-	private Dumper dump;
-	
-	private RequestQueue requests;
-	
-	private ResponseQueue responses;
+	private ResponseQueue<String, String> responses;
 	
 	private Thread dbTh;
 	
 	private boolean isRunning;
 	
-	private Synchronous syn;
-	
 	private long clientId;
 	
 	private int spinCount;
 	
+	private Handler<String, String> handler;
+	
+	private Dumper dump;
+	
+	private Synchronous syn;
+	
 	private KVDataBase(int initCapacity) {
-		this(initCapacity, new RequestLinkedQueue(), new ResponseArrayQueue(), new SleepSynchronous());
+		this(initCapacity, new RequestLinkedQueue<String, String>(), new ResponseArrayQueue<String, String>(), new SleepSynchronous());
 	}
 	
-	@SuppressWarnings("unchecked")
-	private KVDataBase(int initCapacity, RequestQueue req, ResponseQueue rep, Synchronous syn) {
+	private KVDataBase(int initCapacity, RequestQueue<String, String> req,
+			ResponseQueue<String, String> rep, Synchronous syn) {
 		clientId = 1;
-		rehashIndex = -1;
-		
-		dt = new KVMap[2];
-		dt[0] = new KVMap<>(initCapacity);
 		dump = new Dumper(this);
 		
 		this.syn = syn;
@@ -57,8 +54,6 @@ public class KVDataBase implements Runnable{
 		this.responses = rep;
 		
 		this.isRunning = true;
-		this.isRehash = false;
-		
 		this.start();
 	}
 
@@ -66,8 +61,8 @@ public class KVDataBase implements Runnable{
 		return getDatabase(KVMap.DEFAULT_INITIAL_CAPACITY, null, null, null);
 	}
 	
-	// getDatabase
-	public static KVDataBase getDatabase(int initCapacity, RequestQueue req, ResponseQueue rep, Synchronous syn) {
+	public static KVDataBase getDatabase(int initCapacity, RequestQueue<String, String> req, 
+			ResponseQueue<String, String> rep, Synchronous syn) {
 		if (db != null) {
 			return db;
 		}
@@ -83,15 +78,6 @@ public class KVDataBase implements Runnable{
 		return db;
 	}
 	
-	public RequestQueue getRequestQueue() {
-		return this.requests;
-	}
-	
-	public ResponseQueue getResponseQueue() {
-		return this.responses;
-	}
-	
-	// Connection
 	public KVConnection getConnection() {
 		KVConnection con = new KVConnection(this);
 		return con;
@@ -101,106 +87,26 @@ public class KVDataBase implements Runnable{
 		KVConnection con = new KVConnection(this, syn);
 		return con;
 	}
-
-	// put rehash
-	private void put(String key, String value) {
-		if (!isRehash) {
-			if (dt[0].resize()) {
-				isRehash = true;
-				rehashIndex = 0;
-				resize();
-			}
-		}
-		
-		if (isRehash) {
-			dt[1].put(key, value);
-			rehash();
-		} else {
-			dt[0].put(key, value);
-		}
-	}
-
-	private void resize() {
-		int capacity = dt[0].capacity() << 1;
-		if (capacity >= Integer.MAX_VALUE) {
-			throw new ArrayIndexOutOfBoundsException();
-		}
-		capacity = capacity > Integer.MAX_VALUE ? Integer.MAX_VALUE : capacity;
-		dt[1] = new KVMap<>(capacity);
-	}
-
-	// get dt1最新
-	private void get(String key, long cid) {
-		String value;
-		
-		if (isRehash) {
-			if ((value = dt[1].get(key)) == null) {
-				value = dt[0].get(key);
-			} 
-			rehash();
-		} else {
-			value = dt[0].get(key);
-		}
-		
-		// send response
-		produceResponse(key, cid, value);
-	}
-
-	private void produceResponse(String key, long cid, String value) {
-		Response<String, String> rep = new Response<>();
-		if (value == null) {
-			rep.setClientId(cid);
-			rep.setKey(key);
-		} else {
-			rep.setClientId(cid);
-			rep.setKey(key);
-			rep.setValue(value);
-		}
-		responses.produce(rep);
+	
+	public RequestQueue<String, String> getRequestQueue() {
+		return this.requests;
 	}
 	
-	// remove
-	private void remove(String key) {
-		if (isRehash) {
-			dt[0].remove(key);
-			dt[1].remove(key);
-			rehash();
-		} else {
-			dt[0].remove(key);
-		}
-	}
-	
-	private void rehash() {
-		if (rehashIndex < dt[0].capacity()) {
-			Node<String, String> e = dt[0].getIndex(rehashIndex);
-			if (e != null) {
-				dt[1].putNode(e);
-			}
-			rehashIndex++;
-		} else {
-			dt[0] = dt[1];
-			dt[1] = null;
-			
-			isRehash = false;
-			rehashIndex = -1;
-		}
+	public ResponseQueue<String, String> getResponseQueue() {
+		return this.responses;
 	}
 
-	// reset
-	private void reset() {
-		dt[0] = null;
-		dt[1] = null;
-		dt = null;
-	}
-	
-	// dt[0]
-	public Node<String, String>[] getNodes() {
-		// 返回拷贝，会增大内存
-		// 也可以直接返回，但不符合单一职责
-		return dt[0].getNodes();
+	public long getClientId() {
+		return clientId++;
 	}
 
+	public Iterator getIterator() {
+		return new Iterator();
+	}
+	
 	private void start() {
+		prepareHandlers();
+		
 		dbTh = new Thread(this);
 		dbTh.setName("db-thread");
 		dbTh.start();
@@ -209,13 +115,24 @@ public class KVDataBase implements Runnable{
 		System.out.println("db start");
 	}
 	
+	private void prepareHandlers() {
+		handler = new ExpireHandler<>();
+		handler.setDataBase(this);
+		
+		WatchHandler<String, String> wh = new WatchHandler<>();
+		wh.setDataBase(this);
+		handler.setNextHandler(wh);
+		
+		DataHandler<String, String> dh = new DataHandler<>();
+		dh.setDataBase(this);
+		wh.setNextHandler(dh);
+	}
+	
 	private void stop() {
 		dump.stop();
 		
-		dt = null;
 		requests = null;
 		responses = null;
-		
 		isRunning = false;
 	}
 
@@ -228,25 +145,33 @@ public class KVDataBase implements Runnable{
 				spinCount++;
 			}
 			
-			if (req.getType() == Request.PUT) {
-				this.put(req.getKey(), req.getValue());
-			} else if (req.getType() == Request.GET) {
-				this.get(req.getKey(), req.getClientId());
-			} else if (req.getType() == Request.REMOVE) {
-				this.remove(req.getKey());
-			} else if (req.getType() == Request.RESET) {
-				this.reset();
+			if (req.getType() == Request.PUT || req.getType() == Request.GET
+					|| req.getType() == Request.REMOVE || req.getType() == Request.RESET) {
+				handler.process(req);
 			} else if (req.getType() == Request.CLOSE) {
+				handler.process(req);
 				this.stop();
 			} else {
-				System.out.println("wrong request" + req.getType());
+				System.out.println("wrong request type " + req.getType());
 			}
 		}
 		System.out.println("db stop " + spinCount);
 	}
-
-	public long getClientId() {
-		return clientId++;
+	
+	// iterator
+	public class Iterator {
+		
+		private int index;
+		
+		public boolean hasNext() {
+			index++;
+			return handler.hasNext(index);
+		}
+		
+		public NodeFacade<String, String> next() {
+			index++;
+			return handler.next(index);
+		}
 	}
 	
 }

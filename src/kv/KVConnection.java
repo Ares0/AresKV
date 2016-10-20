@@ -33,6 +33,25 @@ public class KVConnection {
 		db.getRequestQueue().produce(new Request<String, String>(Request.PUT, key, value, getClientId()));
 	}
 	
+	public void put(String key, String value, long expire) {
+		Request<String, String> req = new Request<String, String>(Request.PUT, key, value, getClientId());
+		req.setExpireTime(expire);
+		db.getRequestQueue().produce(req);
+	}
+	
+	public void put(String key, String value, boolean watch) {
+		Request<String, String> req = new Request<String, String>(Request.PUT, key, value, getClientId());
+		req.setWatch(watch);
+		db.getRequestQueue().produce(req);
+	}
+	
+	public void put(String key, String value, long expire, boolean watch) {
+		Request<String, String> req = new Request<String, String>(Request.PUT, key, value, getClientId());
+		req.setExpireTime(expire);
+		req.setWatch(watch);
+		db.getRequestQueue().produce(req);
+	}
+	
 	//  一直到有值产生
 	// 保存Thread对用的clientId
 	public String get(String key) {

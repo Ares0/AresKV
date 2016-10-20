@@ -11,6 +11,8 @@ public class Response<K, V> {
 	private V value;
 	
 	private long clientId;
+	
+	private boolean dirty;
 
 	public K getKey() {
 		return key;
@@ -34,6 +36,14 @@ public class Response<K, V> {
 
 	public void setClientId(long clientId) {
 		this.clientId = clientId;
+	}
+
+	public boolean isDirty() {
+		return dirty;
+	}
+
+	public void setDirty(boolean watch) {
+		this.dirty = watch;
 	}
 	
 }

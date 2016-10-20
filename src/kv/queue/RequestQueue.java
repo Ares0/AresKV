@@ -2,10 +2,10 @@ package kv.queue;
 
 import kv.db.Request;
 
-public interface RequestQueue {
+public interface RequestQueue<K, V> {
 
-	public void produce(Request<String, String> req);
+	public void produce(Request<K, V> req);
 	
-	public Request<String, String> consume();
+	public Request<K, V> consume();
 	
 }

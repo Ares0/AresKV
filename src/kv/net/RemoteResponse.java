@@ -15,6 +15,17 @@ public class RemoteResponse extends AbstractResponse implements Serializable{
 	private KVObject value;
 	
 	private boolean dirty;
+	
+	// 返回唯一标识
+	private long clientId;
+
+	public long getClientId() {
+		return clientId;
+	}
+
+	public void setClientId(long clientId) {
+		this.clientId = clientId;
+	}
 
 	public String getKey() {
 		return key;

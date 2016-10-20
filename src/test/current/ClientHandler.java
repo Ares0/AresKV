@@ -1,8 +1,5 @@
 package test.current;
 
-
-import java.net.InetAddress;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import kv.Command;
@@ -19,7 +16,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 		val.setValue("1");
 		
         RemoteRequest rq = new RemoteRequest(Command.PUT,
-        		Type.STRING_TYPE, Type.STRING_TYPE, "1", val, InetAddress.getLocalHost().toString());
+        		Type.STRING_TYPE, Type.STRING_TYPE, "1", val, 0);
         ctx.writeAndFlush(rq);
     }
 

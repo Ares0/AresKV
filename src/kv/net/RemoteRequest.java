@@ -21,10 +21,10 @@ public class RemoteRequest extends AbstractRequest implements Serializable{
 	
 	private long expireTime;
 	
-	// 客户端唯一标识
-	private String clientId;
+	// session 客户端唯一标识
+	private long clientId;
 	
-	public RemoteRequest(int command, int keyType, int valueType, String key, KVObject value, String clientId) {
+	public RemoteRequest(int command, int keyType, int valueType, String key, KVObject value, long clientId) {
 		if (command != Command.PUT && command != Command.GET && command != Command.REMOVE && command != Command.RESET && command != Command.CLOSE) {
 			throw new IllegalArgumentException();
 		}
@@ -74,11 +74,11 @@ public class RemoteRequest extends AbstractRequest implements Serializable{
 		this.expireTime = expireTime;
 	}
 
-	public String getClientId() {
+	public long getClientId() {
 		return clientId;
 	}
 
-	public void setClientId(String clientId) {
+	public void setClientId(long clientId) {
 		this.clientId = clientId;
 	}
 	

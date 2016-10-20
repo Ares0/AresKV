@@ -1,33 +1,34 @@
 package kv.db;
 
 import kv.AbstractResponse;
+import kv.utils.KVObject;
 
 /**
  * Response
  * */
-public class DbResponse<K, V> extends AbstractResponse<K, V> {
+public class DbResponse extends AbstractResponse {
 
-	private K key;
+	private String key;
 	
-	private V value;
+	private KVObject value;
 	
 	private long clientId;
 	
 	private boolean dirty;
 
-	public K getKey() {
+	public String getKey() {
 		return key;
 	}
 
-	public void setKey(K key) {
+	public void setKey(String key) {
 		this.key = key;
 	}
 
-	public V getValue() {
+	public KVObject getValue() {
 		return value;
 	}
 
-	public void setValue(V value) {
+	public void setValue(KVObject value) {
 		this.value = value;
 	}
 

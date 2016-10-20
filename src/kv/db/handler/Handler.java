@@ -1,22 +1,23 @@
 package kv.db.handler;
 
-import kv.db.KVDataBase;
+import kv.utils.KVObject;
+import kv.utils.NodeFacade;
+import kv.KVDataBase;
 import kv.db.DbRequest;
-import kv.db.util.NodeFacade;
 
 // handler
-public interface Handler<K, V> {
+public interface Handler {
 
-	void process(DbRequest<K, V> req);
+	void process(DbRequest req);
 	
-	void setNextHandler(Handler<K, V> h);
+	void setNextHandler(Handler h);
 	
-	void setDataBase(KVDataBase<K, V> kvDataBase);
+	void setDataBase(KVDataBase kvDataBase);
 	
 	boolean hasNext(int index);
 	
-	NodeFacade<K, V> next(int index);
+	NodeFacade<String, KVObject> next(int index);
 	
-	void expire(K key);
+	void expire(String key);
 	
 }

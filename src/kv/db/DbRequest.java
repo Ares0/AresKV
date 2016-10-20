@@ -2,17 +2,18 @@ package kv.db;
 
 import kv.AbstractRequest;
 import kv.Command;
+import kv.utils.KVObject;
 
 /**
  *  command
  * */
-public class DbRequest<K, V> extends AbstractRequest<K, V> {
+public class DbRequest extends AbstractRequest {
 	
 	private int command;
 	
-	private K key;
+	private String key;
 	
-	private V value;
+	private KVObject value;
 	
 	private long clientId;
 	
@@ -24,7 +25,7 @@ public class DbRequest<K, V> extends AbstractRequest<K, V> {
 	
 	private long expireTime;
 	
-	public DbRequest(int command, int keyType, int valueType, K key, V value, long id) {
+	public DbRequest(int command, int keyType, int valueType, String key, KVObject value, long id) {
 		if (command != Command.PUT && command != Command.GET 
 				&& command != Command.REMOVE && command != Command.RESET && command != Command.CLOSE) {
 			throw new IllegalArgumentException();
@@ -43,19 +44,19 @@ public class DbRequest<K, V> extends AbstractRequest<K, V> {
 		this.command = command;
 	}
 
-	public K getKey() {
+	public String getKey() {
 		return key;
 	}
 
-	public void setKey(K key) {
+	public void setKey(String key) {
 		this.key = key;
 	}
 
-	public V getValue() {
+	public KVObject getValue() {
 		return value;
 	}
 
-	public void setValue(V value) {
+	public void setValue(KVObject value) {
 		this.value = value;
 	}
 

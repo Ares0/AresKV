@@ -12,10 +12,10 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import kv.db.KVDataBase;
+import kv.KVDataBase;
 
 // Connector
-public class Connector<K, V> implements Runnable{
+public class Connector implements Runnable{
 
 	private int port;
 	
@@ -27,18 +27,18 @@ public class Connector<K, V> implements Runnable{
 	
 	private EventLoopGroup workerGroup;
 	
-	private NetHandler<K, V> nh;
+	private NetHandler nh;
 	
 	private Thread connectorThread;
 	
 	private ServerBootstrap bootstrap;
 	
-	public Connector(KVDataBase<K, V> db) {
+	public Connector(KVDataBase db) {
 		this.port = DEFAULT_PORT;
 		acceptorGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
         
-        nh = new NetHandler<K, V>(db);
+        nh = new NetHandler(db);
         bootstrap = new ServerBootstrap();
 	}
 	
@@ -76,23 +76,11 @@ public class Connector<K, V> implements Runnable{
             ChannelFuture cf = bootstrap.bind(port).sync();
             
             cf.channel().closeFuture().sync();
-            
-            System.out.println("connector stop");
         } catch (InterruptedException e) {
 			e.printStackTrace();
 		} finally {
 			stop();
         }
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public static void main(String[] args) {
-		Connector c = new Connector<>(null);
-		try {
-			c.start();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 	
 }

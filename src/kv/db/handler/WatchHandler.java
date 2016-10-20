@@ -3,25 +3,25 @@ package kv.db.handler;
 import kv.Command;
 import kv.db.DbRequest;
 import kv.db.DbResponse;
-import kv.db.util.DataTable;
+import kv.utils.DataTable;
 
 
 /**
  *  WatchHandler
  * Get时如果发现有，就返回失败。
  * */ 
-public class WatchHandler<K, V> extends AbstractHandler<K, V> implements Handler<K, V> {
+public class WatchHandler extends AbstractHandler implements Handler {
 	
-	private DataTable<K, DbRequest<K, V>> dt;
+	private DataTable<String, DbRequest> dt;
 	
 	public WatchHandler() {
 		dt = new DataTable<>();
 	}
 	
-	public void process(DbRequest<K, V> req) {
-		K key = req.getKey();
+	public void process(DbRequest req) {
+		String key = req.getKey();
 		int type = req.getCommand();
-		DbRequest<K, V> reqWatch = dt.get(key);
+		DbRequest reqWatch = dt.get(key);
 		long cid = req.getClientId();
 		
 		if (type == Command.PUT || type == Command.REMOVE) {
@@ -52,8 +52,8 @@ public class WatchHandler<K, V> extends AbstractHandler<K, V> implements Handler
 		next.process(req);
 	}
 
-	private void doDirtyRep(DbRequest<K, V> req, K key, DbRequest<K, V> reqWatch) {
-		DbResponse<K, V> rep = new DbResponse<>();
+	private void doDirtyRep(DbRequest req, String key, DbRequest reqWatch) {
+		DbResponse rep = new DbResponse();
 		rep.setClientId(req.getClientId());
 		rep.setKey(reqWatch.getKey());
 		rep.setValue(reqWatch.getValue());
@@ -63,12 +63,12 @@ public class WatchHandler<K, V> extends AbstractHandler<K, V> implements Handler
 		dt.remove(key);
 	}
 	
-	private boolean isDirty(DbRequest<K, V> rw, long cid) {
+	private boolean isDirty(DbRequest rw, long cid) {
 		return (rw != null && rw.isDirty() && cid == rw.getClientId());
 	}
 	
 	@Override
-	public void expire(K key) {
+	public void expire(String key) {
 		dt.remove(key);
 		next.expire(key);
 	}

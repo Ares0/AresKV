@@ -2,15 +2,15 @@ package kv.net;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import kv.db.KVDataBase;
+import kv.KVDataBase;
 
 
 // NetHandler
-public class NetHandler<K, V> extends ChannelInboundHandlerAdapter {
+public class NetHandler extends ChannelInboundHandlerAdapter {
 
-	private KVDataBase<K, V> db;
+	private KVDataBase db;
 
-	public NetHandler(KVDataBase<K, V> db) {
+	public NetHandler(KVDataBase db) {
 		this.db = db;
 	}
 
@@ -19,16 +19,10 @@ public class NetHandler<K, V> extends ChannelInboundHandlerAdapter {
 		ctx.close();
 	}	
 	
-	@SuppressWarnings("unchecked")
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-		
-		System.out.println("read req " + msg.toString());
-		
-		RemoteRequest<K, V> req = (RemoteRequest<K, V>) msg;
-		RemoteResponse<K, V> rep = db.getConnection().process(req);
+		RemoteRequest req = (RemoteRequest) msg;
+		RemoteResponse rep = db.getConnection().process(req);
 		ctx.writeAndFlush(rep);
-		
-		System.out.println("write rep " + rep.getKey());
 	}
 
 }

@@ -4,17 +4,18 @@ import java.io.Serializable;
 
 import kv.AbstractRequest;
 import kv.Command;
+import kv.utils.KVObject;
 
 // remote
-public class RemoteRequest<K, V> extends AbstractRequest<K, V> implements Serializable{
+public class RemoteRequest extends AbstractRequest implements Serializable{
 
 	private static final long serialVersionUID = 3869708429918179386L;
 
 	private int command;
 	
-	private K key;
+	private String key;
 	
-	private V value;
+	private KVObject value;
 	
 	private boolean watch;
 	
@@ -23,7 +24,7 @@ public class RemoteRequest<K, V> extends AbstractRequest<K, V> implements Serial
 	// 客户端唯一标识
 	private String clientId;
 	
-	public RemoteRequest(int command, int keyType, int valueType, K key, V value, String clientId) {
+	public RemoteRequest(int command, int keyType, int valueType, String key, KVObject value, String clientId) {
 		if (command != Command.PUT && command != Command.GET && command != Command.REMOVE && command != Command.RESET && command != Command.CLOSE) {
 			throw new IllegalArgumentException();
 		}
@@ -41,19 +42,19 @@ public class RemoteRequest<K, V> extends AbstractRequest<K, V> implements Serial
 		this.command = command;
 	}
 
-	public K getKey() {
+	public String getKey() {
 		return key;
 	}
 
-	public void setKey(K key) {
+	public void setKey(String key) {
 		this.key = key;
 	}
 
-	public V getValue() {
+	public KVObject getValue() {
 		return value;
 	}
 
-	public void setValue(V value) {
+	public void setValue(KVObject value) {
 		this.value = value;
 	}
 

@@ -3,27 +3,28 @@ package kv.db.handler;
 import kv.Command;
 import kv.db.DbRequest;
 import kv.db.DbResponse;
-import kv.db.util.DataTable;
-import kv.db.util.KVMap.Node;
-import kv.db.util.NodeFacade;
+import kv.utils.DataTable;
+import kv.utils.NodeFacade;
+import kv.utils.KVMap.Node;
+import kv.utils.KVObject;
 
 
 /**
  *  ExpireHandler
  * next时判断存在&&过期，符合条件则返回。
  * */
-public class ExpireHandler<K, V> extends AbstractHandler<K, V> implements Handler<K, V> {
+public class ExpireHandler extends AbstractHandler implements Handler {
 	
-	private DataTable<K, DbRequest<K, V>> dt;
+	private DataTable<String, DbRequest> dt;
 	
-	private final NodeFacade<K, V> none = new NodeFacade<K, V>(0, (K)null, (V)null, null, 0);
+	private final NodeFacade<String, KVObject> none = new NodeFacade<>(0, null, null, null, 0);
 	
 	public ExpireHandler() {
 		dt = new DataTable<>();
 	}
 	
-	public void process(DbRequest<K, V> req) {
-		K key = req.getKey();
+	public void process(DbRequest req) {
+		String key = req.getKey();
 		int type = req.getCommand();
 		long current = System.currentTimeMillis();
 		
@@ -31,9 +32,9 @@ public class ExpireHandler<K, V> extends AbstractHandler<K, V> implements Handle
 			req.setCurrentTime(current);
 			dt.put(key, req, req.getClientId());
 		} else if (type == Command.GET) {
-			DbRequest<K, V> reqExp = dt.get(key);
+			DbRequest reqExp = dt.get(key);
 			if (reqExp != null && isExpire(reqExp, current)) {
-				DbResponse<K, V> rep = expireReponse(req);
+				DbResponse rep = expireReponse(req);
 				
 				db.getResponseQueue().produce(rep);
 				next.expire(key);
@@ -57,7 +58,7 @@ public class ExpireHandler<K, V> extends AbstractHandler<K, V> implements Handle
 		next.process(req);
 	}
 	
-	private boolean isExpire(DbRequest<K, V> req, long current) {
+	private boolean isExpire(DbRequest req, long current) {
 		long old = req.getCurrentTime();
 		long expire = req.getExpireTime();
 		
@@ -67,7 +68,7 @@ public class ExpireHandler<K, V> extends AbstractHandler<K, V> implements Handle
 		return false;
 	}
 
-	public NodeFacade<K, V> next(int index) {
+	public NodeFacade<String, KVObject> next(int index) {
 		if (index <= 0 || index > Integer.MAX_VALUE) {
 			throw new IllegalArgumentException();
 		}
@@ -77,8 +78,8 @@ public class ExpireHandler<K, V> extends AbstractHandler<K, V> implements Handle
 		}
 		
 		long current = System.currentTimeMillis();
-		Node<K, DbRequest<K, V>> e = dt.getIndex(index);
-		DbRequest<K, V> req = e == null ? null : e.getValue();
+		Node<String, DbRequest> e = dt.getIndex(index);
+		DbRequest req = e == null ? null : e.getValue();
 		
 		if (req != null && isExpire(req, current)) {
 			expireNext(req);
@@ -88,15 +89,15 @@ public class ExpireHandler<K, V> extends AbstractHandler<K, V> implements Handle
 		}
 	}
 	
-	private void expireNext(DbRequest<K, V> req) {
-		K key = req.getKey();
+	private void expireNext(DbRequest req) {
+		String key = req.getKey();
 		dt.remove(key);
 	}
 	
-	private DbResponse<K, V> expireReponse(DbRequest<K, V> req) {
-		K key = req.getKey();
+	private DbResponse expireReponse(DbRequest req) {
+		String key = req.getKey();
 		
-		DbResponse<K, V> rep = new DbResponse<>();
+		DbResponse rep = new DbResponse();
 		rep.setClientId(req.getClientId());
 		rep.setKey(key);
 		

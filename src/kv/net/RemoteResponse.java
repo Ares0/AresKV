@@ -3,31 +3,32 @@ package kv.net;
 import java.io.Serializable;
 
 import kv.AbstractResponse;
+import kv.utils.KVObject;
 
 // remote
-public class RemoteResponse<K, V> extends AbstractResponse<K, V> implements Serializable{
+public class RemoteResponse extends AbstractResponse implements Serializable{
 
 	private static final long serialVersionUID = -3917534195643220770L;
 
-	private K key;
+	private String key;
 	
-	private V value;
+	private KVObject value;
 	
 	private boolean dirty;
 
-	public K getKey() {
+	public String getKey() {
 		return key;
 	}
 
-	public void setKey(K key) {
+	public void setKey(String key) {
 		this.key = key;
 	}
 
-	public V getValue() {
+	public KVObject getValue() {
 		return value;
 	}
 
-	public void setValue(V value) {
+	public void setValue(KVObject value) {
 		this.value = value;
 	}
 

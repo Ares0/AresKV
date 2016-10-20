@@ -2,10 +2,10 @@ package kv.queue;
 
 import kv.db.DbResponse;
 
-public interface ResponseQueue<K, V> {
+public interface ResponseQueue {
 
-	public void produce(DbResponse<K, V> rep);
+	public void produce(DbResponse rep);
 	
-	public DbResponse<K, V> consume(long cid);
+	public DbResponse consume(long cid);
 
 }

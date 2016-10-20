@@ -1,25 +1,26 @@
 package kv.db.handler;
 
-import kv.db.KVDataBase;
-import kv.db.util.NodeFacade;
+import kv.KVDataBase;
+import kv.utils.KVObject;
+import kv.utils.NodeFacade;
 
-public abstract class AbstractHandler<K, V> implements Handler<K, V> {
+public abstract class AbstractHandler implements Handler {
 
-	protected Handler<K, V> next;
+	protected Handler next;
 	
-	protected KVDataBase<K, V> db;
+	protected KVDataBase db;
 	
 	@Override
-	public void setNextHandler(Handler<K, V> h) {
+	public void setNextHandler(Handler h) {
 		this.next = h;
 	}
 	
-	public void setDataBase(KVDataBase<K, V> db) {
+	public void setDataBase(KVDataBase db) {
 		this.db = db;
 	}
 	
 	@Override
-	public NodeFacade<K, V> next(int index) {
+	public NodeFacade<String, KVObject> next(int index) {
 		if (index <= 0 || index > Integer.MAX_VALUE) {
 			throw new IllegalArgumentException();
 		}
@@ -35,7 +36,7 @@ public abstract class AbstractHandler<K, V> implements Handler<K, V> {
 	}
 
 	@Override
-	public void expire(K key) {
+	public void expire(String key) {
 		next.expire(key);
 	}
 

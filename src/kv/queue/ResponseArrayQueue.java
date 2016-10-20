@@ -11,18 +11,18 @@ import kv.db.DbResponse;
  * 响应按请求顺序，可以顺序处理；
  * doubleCapacity可能造成内存过大。
  * **/
-public class ResponseArrayQueue<K, V> implements ResponseQueue<K, V> {
+public class ResponseArrayQueue implements ResponseQueue {
 
-	private Map<Long, ArrayDeque<DbResponse<K, V>>> resopnses;
+	private Map<Long, ArrayDeque<DbResponse>> resopnses;
 	
 	public ResponseArrayQueue() {
 		resopnses = new HashMap<>();
 	}
 	
 	@Override
-	public void produce(DbResponse<K, V> rep) {
+	public void produce(DbResponse rep) {
 		long cid = rep.getClientId();
-		ArrayDeque<DbResponse<K, V>> reps = resopnses.get(cid);
+		ArrayDeque<DbResponse> reps = resopnses.get(cid);
 		if (reps == null) {
 			reps = new ArrayDeque<>();
 			resopnses.put(cid, reps);
@@ -33,14 +33,14 @@ public class ResponseArrayQueue<K, V> implements ResponseQueue<K, V> {
 	}
 
 	@Override
-	public DbResponse<K, V> consume(long cid) {
-		ArrayDeque<DbResponse<K, V>> reps = resopnses.get(cid);
+	public DbResponse consume(long cid) {
+		ArrayDeque<DbResponse> reps = resopnses.get(cid);
 		if (reps == null) {
 			return null;
 		}
 		
 		if (reps.size() > 0) {
-			DbResponse<K, V> rep = reps.poll();
+			DbResponse rep = reps.poll();
 //			System.out.println("reponse consume " + rep.getKey());
 			return rep;
 		} else {

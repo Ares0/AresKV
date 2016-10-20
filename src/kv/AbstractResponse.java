@@ -1,6 +1,6 @@
 package kv;
 
-public abstract class AbstractResponse<K, V> {
+public abstract class AbstractResponse {
 	
 	protected int keytype;
 	

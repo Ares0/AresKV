@@ -1,6 +1,6 @@
 package kv;
 
-public abstract class AbstractRequest<K, V> {
+public abstract class AbstractRequest {
 	
 	protected int keytype;
 	

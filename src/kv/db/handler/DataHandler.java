@@ -3,25 +3,26 @@ package kv.db.handler;
 import kv.Command;
 import kv.db.DbRequest;
 import kv.db.DbResponse;
-import kv.db.util.DataTable;
-import kv.db.util.KVMap.Node;
-import kv.db.util.NodeFacade;
+import kv.utils.DataTable;
+import kv.utils.NodeFacade;
+import kv.utils.KVMap.Node;
+import kv.utils.KVObject;
 
 /**
  *  DataHandler
  * 在有效期、事务处理完，进行正式数据的操作。
  * */ 
-public class DataHandler<K, V> extends AbstractHandler<K, V> implements Handler<K, V> {
+public class DataHandler extends AbstractHandler implements Handler {
 
-	private DataTable<K, V> dt;
+	private DataTable<String, KVObject> dt;
 	
-	private final NodeFacade<K, V> none = new NodeFacade<K, V>(0, (K)null, (V)null, null, 0);
+	private final NodeFacade<String, KVObject> none = new NodeFacade<>(0, (String)null, (KVObject)null, null, 0);
 	
 	public DataHandler() {
 		dt = new DataTable<>();
 	}
 	
-	public void process(DbRequest<K, V> req) {
+	public void process(DbRequest req) {
 		int type = req.getCommand();
 		
 		if (type == Command.PUT) {
@@ -40,13 +41,13 @@ public class DataHandler<K, V> extends AbstractHandler<K, V> implements Handler<
 		}
 	}
 	
-	private void get(K key, long clientId) {
-		V v = dt.get(key);
+	private void get(String key, long clientId) {
+		KVObject v = dt.get(key);
 		produceResponse(key, clientId, v);
 	}
 
-	private void produceResponse(K key, long cid, V value) {
-		DbResponse<K, V> rep = new DbResponse<>();
+	private void produceResponse(String key, long cid, KVObject value) {
+		DbResponse rep = new DbResponse();
 		if (value == null) {
 			rep.setClientId(cid);
 			rep.setKey(key);
@@ -71,7 +72,7 @@ public class DataHandler<K, V> extends AbstractHandler<K, V> implements Handler<
 		}
 	}
 	
-	public NodeFacade<K, V> next(int index) {
+	public NodeFacade<String, KVObject> next(int index) {
 		if (index <= 0 || index > Integer.MAX_VALUE) {
 			throw new IllegalArgumentException();
 		}
@@ -79,17 +80,17 @@ public class DataHandler<K, V> extends AbstractHandler<K, V> implements Handler<
 		if (index >= dt.size()) {
 			return null;
 		}
-		Node<K, V> e = dt.getIndex(index);
+		Node<String, KVObject> e = dt.getIndex(index);
 		
-		NodeFacade<K, V> n = null;
+		NodeFacade<String, KVObject> n = null;
 		if (e != null) {
-			n = new NodeFacade<K, V>(e.getHash(), e.getKey(), e.getValue(), e.getNext(), e.getCid());
+			n = new NodeFacade<String, KVObject>(e.getHash(), e.getKey(), e.getValue(), e.getNext(), e.getCid());
 		}
 		return n == null ? none : n;
 	}
 
 	@Override
-	public void expire(K key) {
+	public void expire(String key) {
 		dt.remove(key);
 	}
 	

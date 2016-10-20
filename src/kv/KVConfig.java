@@ -1,12 +1,12 @@
 package kv;
 
-import kv.db.KVDataBase;
+import kv.db.DataBaseFactory;
+import kv.db.StandardDB;
 
 public class KVConfig {
 
-	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) {
-		KVDataBase db = KVDataBase.getDatabase();
+		StandardDB db = DataBaseFactory.getStandardDB();
 		try {
 			db.start();
 		} catch (InterruptedException e) {

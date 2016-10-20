@@ -1,8 +1,10 @@
 package kv.db.handler;
 
 import kv.Command;
-import kv.db.DbRequest;
-import kv.db.DbResponse;
+import kv.bean.DbRequest;
+import kv.bean.DbResponse;
+import kv.db.MasterSlaveDB;
+import kv.db.MasterSlaveDB.DBState;
 import kv.utils.DataTable;
 
 
@@ -24,20 +26,34 @@ public class WatchHandler extends AbstractHandler {
 		DbRequest reqWatch = dt.get(key);
 		long cid = req.getClientId();
 		
+		if (db instanceof MasterSlaveDB) {
+			if (((MasterSlaveDB) db).getState() == DBState.FOLLOWERING
+					&& type == Command.DIRTY) {
+				dt.put(key, req, cid);
+				next.dirty(req);
+			}
+		}
+		
 		if (type == Command.PUT 
 				|| type == Command.REMOVE) {
+			// 进入监视
 			if (reqWatch == null && req.isWatch()) {
 				dt.put(key, req, cid);
-			} else if (isDirty(reqWatch, cid)) {
+			}
+			// 同客户端
+			else if (reqWatch != null && isDirty(reqWatch, cid)) {
 				doDirtyResponse(req, key, reqWatch);
-				return;            // 脏数据返回
-			} else if (reqWatch != null) {
-				req.setDirty(true);
-				dt.put(key, req, cid); 
+				next.dirty(req);
+			}
+			// 脏标识设置
+			else if (reqWatch != null) {
+				reqWatch.setDirty(true);
 			}
 		} else if (type == Command.GET) {
 			if (isDirty(reqWatch, cid)) {
 				doDirtyResponse(req, key, reqWatch);
+				
+				next.dirty(req);
 				return;            // 脏数据返回
 			}
 		} else if (type == Command.RESET) {
@@ -45,9 +61,9 @@ public class WatchHandler extends AbstractHandler {
 		} else if (type == Command.CLOSE) {
 			dt.reset();
 			dt = null;
-		}
+		} 
 		
-		next.process(req);   // 继续处理链
+		next.process(req);   // 不是脏数据，继续处理链
 	}
 
 	private void doDirtyResponse(DbRequest req, String key, DbRequest reqWatch) {
@@ -62,7 +78,7 @@ public class WatchHandler extends AbstractHandler {
 	}
 	
 	private boolean isDirty(DbRequest rw, long cid) {
-		return (rw != null && rw.isDirty() && cid == rw.getClientId());
+		return (rw.isDirty() && cid == rw.getClientId());
 	}
 	
 	@Override

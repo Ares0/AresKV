@@ -1,6 +1,7 @@
 package kv.db.handler;
 
 import kv.KVDataBase;
+import kv.bean.DbRequest;
 import kv.utils.KVObject;
 import kv.utils.KVNode;
 
@@ -38,6 +39,11 @@ public abstract class AbstractHandler implements Handler {
 	@Override
 	public void expire(String key) {
 		next.expire(key);
+	}
+	
+	@Override
+	public void dirty(DbRequest req) {
+		next.dirty(req);
 	}
 
 }

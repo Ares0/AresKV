@@ -1,6 +1,6 @@
 package kv.queue;
 
-import kv.db.DbRequest;
+import kv.bean.DbRequest;
 
 public interface RequestQueue {
 

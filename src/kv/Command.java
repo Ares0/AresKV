@@ -12,6 +12,10 @@ public interface Command {
 	
 	public static int CLOSE = 5;
 	
+	public static int EXPIRE = 7;
+	
+	public static int DIRTY = 8;
+	
 	public static int ADD_CLUSTER_NODE = 10;
 	
 	public static int CHANGE_CLUSTER_RANGE = 11;

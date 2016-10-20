@@ -1,7 +1,7 @@
 package kv;
 
+import kv.db.KVConnection;
 import kv.db.AbstractDB.Iterator;
-import kv.net.KVConnection;
 import kv.queue.RequestQueue;
 import kv.queue.ResponseQueue;
 

@@ -1,9 +1,9 @@
 package kv.db.handler;
 
 import kv.Command;
+import kv.bean.DbRequest;
+import kv.bean.DbResponse;
 import kv.db.ClusterDB;
-import kv.db.DbRequest;
-import kv.db.DbResponse;
 import kv.utils.KVObject;
 import kv.utils.Range;
 import kv.utils.DataType;

@@ -24,11 +24,11 @@ public class Range implements Comparable<Range> {
 	@Override
 	public int compareTo(Range range) {
 		if (start > range.getEnd()) {
-			return -1;
-		} else if (end < range.getStart()) {
 			return 1;
-		} else if (start <= range.getStart() 
-				&& end >= range.getEnd()) {
+		} else if (end < range.getStart()) {
+			return -1;
+		} else if (start >= range.getStart() 
+				&& end <= range.getEnd()) {
 			return 0;
 		} else {
 			throw new IllegalArgumentException();

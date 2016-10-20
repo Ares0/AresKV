@@ -1,6 +1,6 @@
 package kv.queue;
 
-import kv.db.DbResponse;
+import kv.bean.DbResponse;
 
 public interface ResponseQueue {
 

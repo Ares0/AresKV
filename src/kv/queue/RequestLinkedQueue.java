@@ -2,7 +2,7 @@ package kv.queue;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import kv.db.DbRequest;
+import kv.bean.DbRequest;
 
 /**
  * queue

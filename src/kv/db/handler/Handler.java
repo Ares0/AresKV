@@ -3,7 +3,7 @@ package kv.db.handler;
 import kv.utils.KVObject;
 import kv.utils.KVNode;
 import kv.KVDataBase;
-import kv.db.DbRequest;
+import kv.bean.DbRequest;
 
 // handler
 public interface Handler {
@@ -19,5 +19,7 @@ public interface Handler {
 	KVNode<String, KVObject> next(int index);
 	
 	void expire(String key);
+
+	void dirty(DbRequest req);
 	
 }

@@ -1,8 +1,10 @@
 package kv.db;
 
+import java.util.List;
 import java.util.Map;
 
 import kv.KVDataBase;
+import kv.db.MasterSlaveDB.DBState;
 import kv.queue.RequestQueue;
 import kv.queue.ResponseQueue;
 import kv.synchro.Synchronous;
@@ -13,25 +15,25 @@ public class DBFactory {
 
 	private static KVDataBase db;
 	
-	public static StandardDB getStandardDB() {
+	public static StandAloneDB getStandardDB() {
 		return getStandardDB(KVMap.DEFAULT_INITIAL_CAPACITY, null, null, null);
 	}
 	
-	public static StandardDB getStandardDB(int initCapacity, RequestQueue req, 
+	public static StandAloneDB getStandardDB(int initCapacity, RequestQueue req, 
 			ResponseQueue rep, Synchronous syn) {
 		if (db != null) {
-			return (StandardDB) db;
+			return (StandAloneDB) db;
 		}
-		synchronized (StandardDB.class) {
+		synchronized (StandAloneDB.class) {
 			if (db == null) {
 				if (req == null || syn == null) {
-					db = new StandardDB(initCapacity);
+					db = new StandAloneDB(initCapacity);
 				} else {
-					db = new StandardDB(initCapacity, req, rep, syn);
+					db = new StandAloneDB(initCapacity, req, rep, syn);
 				}
 			}
 		}
-		return (StandardDB) db;
+		return (StandAloneDB) db;
 	}
 	
 	public static ClusterDB getClusterDB(int start, int end) {
@@ -43,7 +45,7 @@ public class DBFactory {
 		if (db != null) {
 			return (ClusterDB) db;
 		}
-		synchronized (StandardDB.class) {
+		synchronized (StandAloneDB.class) {
 			if (db == null) {
 				if (req == null || syn == null) {
 					db = new ClusterDB(start, end);
@@ -53,5 +55,26 @@ public class DBFactory {
 			}
 		}
 		return (ClusterDB) db;
+	}
+	
+	public static MasterSlaveDB getMasterSlaveDB() {
+		return getMasterSlaveDB(null, null, null, null, null, null);
+	}
+	
+	public static MasterSlaveDB getMasterSlaveDB(RequestQueue req, 
+			ResponseQueue rep, Synchronous syn, RequestQueue dup, List<String> sa, DBState state) {
+		if (db != null) {
+			return (MasterSlaveDB) db;
+		}
+		synchronized (MasterSlaveDB.class) {
+			if (db == null) {
+				if (req == null || syn == null) {
+					db = new MasterSlaveDB();
+				} else {
+					db = new MasterSlaveDB(req, rep, syn, dup, sa, state);
+				}
+			}
+		}
+		return (MasterSlaveDB) db;
 	}
 }

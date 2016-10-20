@@ -1,8 +1,10 @@
 package kv.db.handler;
 
 import kv.Command;
-import kv.db.DbRequest;
-import kv.db.DbResponse;
+import kv.bean.DbRequest;
+import kv.bean.DbResponse;
+import kv.db.MasterSlaveDB;
+import kv.db.MasterSlaveDB.DBState;
 import kv.utils.DataTable;
 import kv.utils.KVNode;
 import kv.utils.KVMap.Node;
@@ -23,6 +25,13 @@ public class DataHandler extends AbstractHandler {
 	
 	public void process(DbRequest req) {
 		int type = req.getCommand();
+		
+		if (db instanceof MasterSlaveDB) {
+			if (((MasterSlaveDB) db).getState() == DBState.FOLLOWERING
+					&& type == Command.EXPIRE) {
+				dt.remove(req.getKey());
+			}
+		}
 		
 		if (type == Command.PUT) {
 			dt.put(req.getKey(), req.getValue(), req.getClientId());
@@ -46,9 +55,7 @@ public class DataHandler extends AbstractHandler {
 		DbResponse rep = new DbResponse();
 		rep.setClientId(req.getClientId());
 		rep.setKey(req.getKey());
-		rep.setKeyType(req.getKeyType());
 		rep.setValue(req.getValue());
-		rep.setValueType(req.getValueType());
 		db.getResponseQueue().produce(rep);
 	}
 	

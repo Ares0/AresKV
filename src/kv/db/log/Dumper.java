@@ -63,7 +63,13 @@ public class Dumper implements Runnable {
 	public void run() {
 		while (isRunning) {
 			try {
-				Thread.sleep(DEFAULT_SLEEP_TIME);
+				try {
+					Thread.sleep(DEFAULT_SLEEP_TIME);
+				} catch (InterruptedException e1) {
+					if (!isRunning) {
+						return;
+					}
+				}
 
 				File f = createLog();
 				beforeContentWrite(f);
@@ -75,9 +81,10 @@ public class Dumper implements Runnable {
 				while ((e = it.next()) != null) {
 					String key = e.getKey();
 					KVObject val = e.getValue();
-					Object value = val.getValue();
+					Object value;
 					
-					if (key != null && val != null && value != null) {
+					if (key != null && val != null 
+							&& (value = val.getValue()) != null) {
 						sb.append(key + value.toString());
 
 						writeType(key);
@@ -92,8 +99,6 @@ public class Dumper implements Runnable {
 				}
 
 				afterContentWrite(f, sb);
-			} catch (InterruptedException e) {
-				System.out.println("dump interrupt");
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}

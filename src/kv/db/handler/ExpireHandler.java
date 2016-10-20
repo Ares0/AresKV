@@ -1,8 +1,8 @@
 package kv.db.handler;
 
 import kv.Command;
-import kv.db.DbRequest;
-import kv.db.DbResponse;
+import kv.bean.DbRequest;
+import kv.bean.DbResponse;
 import kv.utils.DataTable;
 import kv.utils.KVNode;
 import kv.utils.KVMap.Node;
@@ -35,11 +35,10 @@ public class ExpireHandler extends AbstractHandler {
 		} else if (type == Command.GET) {
 			DbRequest reqExp = dt.get(key);
 			if (reqExp != null && isExpire(reqExp, current)) {
-				DbResponse rep = doExpireReponse(req);
+				doExpireReponse(req);
 				
-				db.getResponseQueue().produce(rep);
-				next.expire(key);
-				return;           // 过期返回
+				next.expire(key);   // 过期数据返回
+				return;
 			}
 		} else if (type == Command.REMOVE) {
 			dt.remove(key);
@@ -48,9 +47,9 @@ public class ExpireHandler extends AbstractHandler {
 		} else if (type == Command.CLOSE) {
 			dt.reset();
 			dt = null;
-		}
+		} 
 		
-		next.process(req);   // 继续处理链
+		next.process(req);   // 不是过期，继续处理链
 	}
 	
 	private boolean isExpire(DbRequest req, long current) {
@@ -89,15 +88,15 @@ public class ExpireHandler extends AbstractHandler {
 		dt.remove(key);
 	}
 	
-	private DbResponse doExpireReponse(DbRequest req) {
+	private void doExpireReponse(DbRequest req) {
 		String key = req.getKey();
 		
 		DbResponse rep = new DbResponse();
 		rep.setClientId(req.getClientId());
 		rep.setKey(key);
 		
+		db.getResponseQueue().produce(rep);
 		dt.remove(key);
-		return rep;
 	}
 
 }

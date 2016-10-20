@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import kv.db.DbResponse;
+import kv.bean.DbResponse;
 
 // linkedlist
 public class ResponseLinkedQueue implements ResponseQueue {

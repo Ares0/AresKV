@@ -14,19 +14,19 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 
-public class ClientTest {
+public class ClientTest2 {
 	
 	private String host;
 	
 	private int port;
 	
-	public ClientTest() {
-		port = 8075;
+	public ClientTest2() {
+		port = 8076;
 		host = "127.0.0.1";
 	}
 	
 	public static void main(String[] args) throws InterruptedException {
-		ClientTest cs = new ClientTest();
+		ClientTest2 cs = new ClientTest2();
 		try {
 			cs.remote();
 		} catch (UnknownHostException e) {
@@ -47,7 +47,7 @@ public class ClientTest {
 //                        	ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                             ch.pipeline().addLast(new ObjectDecoder(1024 ,ClassResolvers.cacheDisabled(null)));
                             ch.pipeline().addLast(new ObjectEncoder());
-                            ch.pipeline().addLast(new ClientHandler());
+                            ch.pipeline().addLast(new ClientHandler2());
                         }
                     });
 

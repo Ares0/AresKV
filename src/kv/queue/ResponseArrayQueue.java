@@ -4,7 +4,7 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 
-import kv.db.DbResponse;
+import kv.bean.DbResponse;
 
 /*
  *  ArrayQueue

@@ -3,9 +3,9 @@ package kv.queue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import kv.db.DbRequest;
-import kv.synchro.SleepSynchronous;
+import kv.bean.DbRequest;
 import kv.synchro.Synchronous;
+import kv.synchro.SynchronousFactory;
 
 /**
  *  queue
@@ -34,7 +34,7 @@ public class RequestRingQueue implements RequestQueue {
 	}
 	
 	public RequestRingQueue(int capacity) {
-		this(capacity, new SleepSynchronous(), new SleepSynchronous());
+		this(capacity, SynchronousFactory.getSleepSynchronous(), SynchronousFactory.getSleepSynchronous());
 	}
 	
 	public RequestRingQueue(int capacity, Synchronous writeSyn, Synchronous readSyn) {

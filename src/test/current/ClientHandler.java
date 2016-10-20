@@ -3,20 +3,20 @@ package test.current;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import kv.Command;
-import kv.net.RemoteRequest;
-import kv.net.RemoteResponse;
+import kv.bean.RemoteRequest;
+import kv.bean.RemoteResponse;
 import kv.utils.KVObject;
 import kv.utils.DataType;
 
 public class ClientHandler extends ChannelInboundHandlerAdapter {
 	
-	public void channelActive(ChannelHandlerContext ctx) throws Exception {
+	public void channelActive(ChannelHandlerContext ctx) 
+			throws Exception {
 		KVObject val = new KVObject();
 		val.setType(DataType.STRING_TYPE);
 		val.setValue("1");
 		
-        RemoteRequest rq = new RemoteRequest(Command.PUT,
-        		DataType.STRING_TYPE, DataType.STRING_TYPE, "fafhk", val, 0);
+        RemoteRequest rq = new RemoteRequest(Command.PUT, "fafhkd", val, 0);
         ctx.writeAndFlush(rq);
     }
 

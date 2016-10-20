@@ -3,8 +3,7 @@ package kv.db;
 import kv.KVDataBase;
 import kv.db.handler.Handler;
 import kv.db.log.Dumper;
-import kv.net.Connector;
-import kv.net.KVConnection;
+import kv.net.KVConnector;
 import kv.queue.RequestQueue;
 import kv.queue.ResponseQueue;
 import kv.synchro.Synchronous;
@@ -33,7 +32,7 @@ public abstract class AbstractDB implements KVDataBase {
 	
 	protected Synchronous syn;
 	
-	protected Connector connector;
+	protected KVConnector connector;
 	
 	public KVConnection getConnection() {
 		return this.getConnection(null);

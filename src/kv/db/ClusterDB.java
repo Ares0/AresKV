@@ -6,18 +6,19 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import kv.Command;
+import kv.bean.DbRequest;
 import kv.db.handler.ClusterHandler;
 import kv.db.handler.DataHandler;
 import kv.db.handler.ExpireHandler;
 import kv.db.handler.WatchHandler;
 import kv.db.log.Dumper;
-import kv.net.Connector;
+import kv.net.KVConnector;
 import kv.queue.RequestLinkedQueue;
 import kv.queue.RequestQueue;
 import kv.queue.ResponseLinkedQueue;
 import kv.queue.ResponseQueue;
-import kv.synchro.SpinSynchronous;
 import kv.synchro.Synchronous;
+import kv.synchro.SynchronousFactory;
 import kv.utils.Range;
 
 /*
@@ -37,18 +38,20 @@ public class ClusterDB extends AbstractDB {
 	public static int KEY_RANGE_MAX_VALUE = 16384;
 	
 	ClusterDB(int keyStart, int keyEnd) {
-		this(keyStart, keyEnd, new RequestLinkedQueue(), new ResponseLinkedQueue(), new SpinSynchronous(), null);
+		this(keyStart, keyEnd, new RequestLinkedQueue(), new ResponseLinkedQueue(), 
+				SynchronousFactory.getSpinSynchronous(), null);
 	}
 	
 	ClusterDB(Range range, Map<String, Range> clusterRouter) {
-		this(range.getStart(), range.getEnd(), new RequestLinkedQueue(), new ResponseLinkedQueue(), new SpinSynchronous(), clusterRouter);
+		this(range.getStart(), range.getEnd(), new RequestLinkedQueue(), new ResponseLinkedQueue(), 
+				SynchronousFactory.getSpinSynchronous(), clusterRouter);
 	}
 	
 	ClusterDB(int keyStart, int keyEnd, RequestQueue req,
 			ResponseQueue rep, Synchronous syn, Map<String, Range> clusterRange) {
 		clientId = 1;
 		dump = new Dumper(this);
-		connector = new Connector(this);
+		connector = new KVConnector(this);
 		
 		this.syn = syn;
 		this.requests = req;
@@ -110,11 +113,12 @@ public class ClusterDB extends AbstractDB {
 				spinCount++;
 			}
 			
-			if (req.getCommand() == Command.PUT || req.getCommand() == Command.GET
-					|| req.getCommand() == Command.REMOVE || req.getCommand() == Command.RESET
-					|| req.getCommand() == Command.ADD_CLUSTER_NODE || req.getCommand() == Command.CHANGE_CLUSTER_RANGE) {
+			int com = req.getCommand();
+			if (com == Command.PUT || com == Command.GET
+					|| com == Command.REMOVE || com == Command.RESET
+					|| com == Command.ADD_CLUSTER_NODE || com == Command.CHANGE_CLUSTER_RANGE) {
 				handler.process(req);
-			} else if (req.getCommand() == Command.CLOSE) {
+			} else if (com == Command.CLOSE) {
 				handler.process(req);
 				this.stop();
 			} else {

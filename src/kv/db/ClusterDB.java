@@ -124,7 +124,7 @@ public class ClusterDB extends AbstractDB {
 			} else {
 				System.out.println("wrong request type " + req.getCommand());
 			}
-			req = null;  // gc except expire and watch
+			req = null;  // gc db req except expire and watch
 		}
 		System.out.println("cluster node stop " + spinCount);
 	}

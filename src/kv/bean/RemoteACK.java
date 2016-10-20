@@ -1,38 +1,35 @@
 package kv.bean;
 
-import java.io.Serializable;
 
-public class RemoteACK implements Serializable {
+public class RemoteACK {
 
-	private static final long serialVersionUID = -6579869166567310122L;
+	private boolean i; // isRep
 	
-	private boolean isRep;
-	
-	private String host;
+	private String h; // host
 
 	public RemoteACK(String host) {
 		this(false, host);
 	}
 	
 	public RemoteACK(boolean isRep, String host) {
-		this.isRep = isRep;
-		this.host = host;
+		this.i = isRep;
+		this.h = host;
 	}
 
-	public boolean isRep() {
-		return isRep;
+	public boolean isI() {
+		return i;
 	}
 
-	public void setRep(boolean isRep) {
-		this.isRep = isRep;
+	public void setI(boolean isRep) {
+		this.i = isRep;
 	}
 
-	public String getHost() {
-		return host;
+	public String getH() {
+		return h;
 	}
 
-	public void setHost(String host) {
-		this.host = host;
+	public void setH(String host) {
+		this.h = host;
 	}
 
 }

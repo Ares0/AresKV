@@ -84,7 +84,7 @@ public class Dumper implements Runnable {
 					Object value;
 					
 					if (key != null && val != null 
-							&& (value = val.getValue()) != null) {
+							&& (value = val.getV()) != null) {
 						sb.append(key + value.toString());
 
 						writeType(key);

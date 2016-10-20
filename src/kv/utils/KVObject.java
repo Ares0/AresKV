@@ -1,29 +1,41 @@
 package kv.utils;
 
-import java.io.Serializable;
+import com.alibaba.fastjson.annotation.JSONField;
 
-public class KVObject implements Serializable {
+public class KVObject {
 
-	private static final long serialVersionUID = -8776525355295644753L;
-
-	private DataType type;
+	private DataType t; // type
 	
-	private Object value;
+	private Object v; // value
+	
+	public KVObject() {}
 
-	public DataType getType() {
-		return type;
+	@JSONField(serialize = false)
+	public DataType getT() {
+		return t;
 	}
 
-	public void setType(DataType type) {
-		this.type = type;
+	@JSONField(deserialize = false)
+	public void setT(DataType type) {
+		this.t = type;
+	}
+	
+	@JSONField(name = "t")
+	public int getTCode() {
+		return t.getVal();
+	}
+	
+	@JSONField(name = "t")
+	public void setTCode(int type) {
+		this.t = DataType.getType(type);
 	}
 
-	public Object getValue() {
-		return value;
+	public Object getV() {
+		return v;
 	}
 
-	public void setValue(Object value) {
-		this.value = value;
+	public void setV(Object value) {
+		this.v = value;
 	}
 	
 }

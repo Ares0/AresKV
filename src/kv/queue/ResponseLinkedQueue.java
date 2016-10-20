@@ -7,7 +7,7 @@ import java.util.Map;
 import kv.bean.DbResponse;
 
 // linkedlist
-public class ResponseLinkedQueue implements ResponseQueue {
+public class ResponseLinkedQueue extends AbstractResponseQueue {
 
 	private Map<Long, LinkedList<DbResponse>> resopnses;
 	

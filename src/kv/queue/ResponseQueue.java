@@ -7,5 +7,7 @@ public interface ResponseQueue {
 	public void produce(DbResponse rep);
 	
 	public DbResponse consume(long cid);
+	
+	public DbResponse consume(String key);
 
 }

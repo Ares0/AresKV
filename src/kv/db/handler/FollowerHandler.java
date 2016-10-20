@@ -28,8 +28,8 @@ public class FollowerHandler extends AbstractHandler {
 		rep.setKey(req.getKey());
 		
 		KVObject ko = req.getValue();
-		ko.setType(DataType.STRING_TYPE);
-		ko.setValue("can not be modified from the slave");
+		ko.setT(DataType.STRING_TYPE);
+		ko.setV("can not be modified from the slave");
 		rep.setValue(ko);
 		
 		db.getResponseQueue().produce(rep);

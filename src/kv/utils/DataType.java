@@ -1,6 +1,5 @@
 package kv.utils;
 
-
 // type
 public enum DataType {
 
@@ -10,12 +9,23 @@ public enum DataType {
 
 	private int val;
 	
+	DataType() {}
+	
 	DataType(int val) {
 		this.val = val;
 	}
 	
 	public int getVal() {
 		return val;
+	}
+
+	public static DataType getType(int type) {
+		for (DataType t : DataType.values()) {
+			if (t.getVal() == type) {
+				return t;
+			}
+		}
+		return null;
 	}
 	
 }

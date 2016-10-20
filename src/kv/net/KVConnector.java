@@ -1,25 +1,35 @@
 package kv.net;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.handler.codec.LineBasedFrameDecoder;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 import kv.KVDataBase;
 
 // Connector
+/**
+ *  Connector
+ * 连接小缓冲区，增加缓冲区，使用堆外，复用内存。
+ * */
 public class KVConnector implements Runnable {
 
 	private int port;
 	
 	private static int DEFAULT_PORT = 8075;
 	
-	private static int DEFAULT_OBJECT_SIZE = 4*1024*1024;
+	private static int DEFAULT_MAX_LENGTH = 4096;
+	
+	private static int RCV_BUF_SIZE = 256*1024;
+	
+	private static int SND_BUF_SIZE = 256*1024;
 	
 	private EventLoopGroup acceptorGroup;
 	
@@ -60,11 +70,16 @@ public class KVConnector implements Runnable {
 		try {
             bootstrap.group(acceptorGroup, workerGroup)
                      .channel(NioServerSocketChannel.class)
+                     .option(ChannelOption.SO_RCVBUF, RCV_BUF_SIZE)
+                     .option(ChannelOption.SO_SNDBUF, SND_BUF_SIZE)
+                     .childOption(ChannelOption.TCP_NODELAY, true)
+                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                      .childHandler(new ChannelInitializer<SocketChannel>() {
                         public void initChannel(SocketChannel ch) throws Exception {
-                        	ch.pipeline().addLast(new ObjectDecoder(DEFAULT_OBJECT_SIZE, ClassResolvers.weakCachingConcurrentResolver(
-                                      				this.getClass().getClassLoader())));
-                        	ch.pipeline().addLast(new ObjectEncoder());
+//                        	ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
+                        	ch.pipeline().addLast(new LineBasedFrameDecoder(DEFAULT_MAX_LENGTH));
+                        	ch.pipeline().addLast(new StringDecoder());
+                        	ch.pipeline().addLast(new StringEncoder());
                         	ch.pipeline().addLast(nh);
                         }
                     });

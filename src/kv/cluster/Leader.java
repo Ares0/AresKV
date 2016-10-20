@@ -97,14 +97,14 @@ public class Leader implements Duplicater, Runnable {
 	}
 
 	public void doRead(ChannelHandlerContext ctx, RemoteACK msg) {
-		String host = msg.getHost();
+		String host = msg.getH();
 		slaveTick.put(host, System.currentTimeMillis());
 		
 		if (cfm.get(host) == null) {
 			cfm.put(host, ctx.channel());
 		}
 		
-		if (msg.isRep()) {
+		if (msg.isI()) {
 			ctx.writeAndFlush(ackMsg);
 		}
 	}

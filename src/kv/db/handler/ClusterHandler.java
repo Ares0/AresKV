@@ -24,7 +24,7 @@ public class ClusterHandler extends AbstractHandler {
 		ClusterDB cdb = (ClusterDB)db;
 		
 		if (type == Command.ADD_CLUSTER_NODE) {
-			int[] range = (int[]) req.getValue().getValue();
+			int[] range = (int[]) req.getValue().getV();
 			if (range[0] < 0 || range[1] < 0 
 					|| range[0] > ClusterDB.KEY_RANGE_MAX_VALUE || range[0] > ClusterDB.KEY_RANGE_MAX_VALUE) {
 				throw new IllegalArgumentException("·¶Î§²ÎÊý´íÎó");
@@ -64,11 +64,11 @@ public class ClusterHandler extends AbstractHandler {
 		rep.setKey(req.getKey());
 		
 		KVObject v = new KVObject();
-		v.setType(DataType.STRING_TYPE);
+		v.setT(DataType.STRING_TYPE);
 		
 		rc.setStart(range);
 		rc.setEnd(range);
-		v.setValue(getClusterNodeAddress());
+		v.setV(getClusterNodeAddress());
 		
 		rep.setValue(v);
 		rep.setMove(true);

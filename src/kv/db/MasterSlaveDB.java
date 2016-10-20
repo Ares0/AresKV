@@ -184,7 +184,7 @@ public class MasterSlaveDB extends AbstractDB {
 				System.out.println("wrong request type " + req.getCommand());
 			}
 			txid++;  //  ¬ŒÒ–Ú¡–∫≈
-			req = null;  // gc except expire and watch
+			req = null;  // gc db req except expire and watch
 		}
 		System.out.println("ms dbe stop " + spinCount);
 	}

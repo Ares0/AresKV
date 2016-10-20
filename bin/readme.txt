@@ -1,11 +1,9 @@
 
    
    
-     实现一个嵌入式，只支持String的内存KV存储；
-引擎采用单线程，避免多线程并发问题。
+    支持dump操作，持久化到日志中；
+DataOutputStream写入UTF，包装了length、unicode;
+FileOutputStream-BufferedOutputStream-DataOutputStream逐层增强。
 
-  java -Xms512m -Xmx2048m -jar 100.jar 
-   一百万写：345  五百万读：406
-  
-  java -Xms3000m -Xmx4096m -jar 1000.jar 
-   一千万写：5203 五千万读：4693
+  db不能一直存在，考虑服务器模式；
+ 直接访问Map，存在写入频繁，造成dump一直完不成问题。

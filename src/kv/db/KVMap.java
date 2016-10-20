@@ -5,11 +5,11 @@ import java.util.Objects;
 /**
  *  Map实现
  * */
-public class KVMap<K, V>{
+public class KVMap<K, V> {
 
 	private Node<K,V>[] table;
 	
-	private static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
+	public static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
 	
 	private static final int MAXIMUM_CAPACITY = Integer.MAX_VALUE;
 	
@@ -67,18 +67,27 @@ public class KVMap<K, V>{
         int h;
         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
     }
-    
+	
+	// get
 	public V get(Object key) {
-        Node<K,V> e;
+        Node<K, V> e;
         return (e = getNode(hash(key), key)) == null ? null : e.value;
     }
 	
 	public Node<K, V> getIndex(int index) {
-		if (index >= size) {
+		if (index >= size) 
 			return null;
-		}
         return table[index];
     }
+	
+	// 直接返回
+	public Node<K, V>[] getNodes() {
+		// 返回拷贝，会增大内存
+		// 也可以直接返回，但不符合单一职责
+		
+        // return Arrays.copyOf(table, table.length);
+		return table;
+	}
 	
 	private final Node<K,V> getNode(int hash, Object key) {
         Node<K,V>[] tab; 
@@ -100,6 +109,7 @@ public class KVMap<K, V>{
         return null;
     }
 	
+	// put
     public V put(K key, V value) {
         return putVal(hash(key), key, value);
     }
@@ -151,6 +161,7 @@ public class KVMap<K, V>{
         return new Node<>(hash, key, value, next);
     }
 	
+	// remove
 	public V remove(Object key) {
 		Node<K,V> e;
         return (e = removeNode(hash(key), key)) == null ? null : e.value;
@@ -199,6 +210,7 @@ public class KVMap<K, V>{
 		 } while ((e = e.next) != null);
 	}
 	
+	// node
 	public static class Node<K, V> {
         final int hash;
         final K key;

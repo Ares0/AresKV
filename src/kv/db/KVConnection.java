@@ -28,4 +28,8 @@ public class KVConnection {
 		db.reset();
 	}
 	
+	public void close() {
+		db.close();
+	}
+	
 }

@@ -1,6 +1,7 @@
 package kv.db;
 
 import kv.db.KVMap.Node;
+import kv.persistence.Dumper;
 
 /**
  *  数据库类
@@ -13,11 +14,10 @@ public class KVDataBase {
 	
 	private int rehashIndex;
 	
-	@SuppressWarnings("unchecked")
+	private Dumper dump;
+	
 	private KVDataBase() {
-		rehashIndex = -1;
-		dt = new KVMap[2];
-		dt[0] = new KVMap<>();
+		this(KVMap.DEFAULT_INITIAL_CAPACITY);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -25,18 +25,13 @@ public class KVDataBase {
 		rehashIndex = -1;
 		dt = new KVMap[2];
 		dt[0] = new KVMap<>(initCapacity);
+		
+		Dumper dump = new Dumper(this);
+		dump.start();
 	}
 	
 	public static KVDataBase getDatabase() {
-		if (db != null) {
-			return db;
-		}
-		synchronized (KVDataBase.class) {
-			if (db == null) {
-				db = new KVDataBase();
-			}
-		}
-		return db;
+		return getDatabase(KVMap.DEFAULT_INITIAL_CAPACITY);
 	}
 	
 	public static KVDataBase getDatabase(int initCapacity) {
@@ -51,11 +46,13 @@ public class KVDataBase {
 		return db;
 	}
 	
+	// Connection
 	public KVConnection getConnection() {
 		KVConnection con = new KVConnection(this);
 		return con;
 	}
 
+	// put rehash
 	public void put(String key, String value) {
 		if (rehashIndex == -1) {
 			if (dt[0].resize()) {
@@ -82,6 +79,7 @@ public class KVDataBase {
 		dt[1] = new KVMap<>(capacity);
 	}
 
+	// get
 	public String get(String key) {
 		if (rehashIndex != -1) {
 			rehash();
@@ -97,6 +95,7 @@ public class KVDataBase {
 		}
 	}
 	
+	// remove
 	public String remove(String key) {
 		if (rehashIndex != -1) {
 			dt[0].remove(key);
@@ -122,10 +121,23 @@ public class KVDataBase {
 		}
 	}
 
+	// reset
 	public void reset() {
 		dt[0] = null;
 		dt[1] = null;
 		dt = null;
+	}
+	
+	// dt[0]
+	public Node<String, String>[] getNodes() {
+		// 返回拷贝，会增大内存
+		// 也可以直接返回，但不符合单一职责
+		return dt[0].getNodes();
+	}
+
+	// close
+	public void close() {
+		dump.stop();
 	}
 	
 }

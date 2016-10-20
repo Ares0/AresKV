@@ -14,7 +14,7 @@ public class FollowerHandler extends AbstractHandler {
 
 	@Override
 	public void process(DbRequest req) {
-		int type = req.getCommand();
+		Command type = req.getCommand();
 		if (type == Command.PUT || type == Command.REMOVE) {
 			doSalveResponse(req);
 		} else {

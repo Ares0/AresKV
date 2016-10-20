@@ -1,23 +1,36 @@
 package test.current;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import kv.db.DBFactory;
-import kv.db.MasterSlaveDB;
-import kv.db.MasterSlaveDB.DBState;
+import kv.db.StandAloneDB;
 import kv.queue.RequestLinkedQueue;
-import kv.queue.ResponseLinkedQueue;
+import kv.queue.ResponseBlockingLinkedQueue;
 import kv.synchro.SynchronousFactory;
 
+
+
+/*  
+ * 线程大量切换，消耗的时间更长。
+ **/
 public class KVConfig {
 
 	public static void main(String[] args) {
-		List<String> sa = new ArrayList<>();
-		sa.add("127.0.0.1");
-		
-		MasterSlaveDB db = DBFactory.getMasterSlaveDB(new RequestLinkedQueue(), new ResponseLinkedQueue(), 
-				SynchronousFactory.getSpinSynchronous(), new RequestLinkedQueue(), sa, DBState.LEADERING);
+		spinTest();
+	}
+	
+	public static void spinTest() {
+		StandAloneDB db = DBFactory.getStandardDB();
+		try {
+			db.start();
+		} catch (InterruptedException e) {
+			db.stop();
+			e.printStackTrace();
+		}
+	}
+	
+	public static void conditionTest() {
+		StandAloneDB db = DBFactory.getStandardDB(16, new RequestLinkedQueue(), 
+				new ResponseBlockingLinkedQueue(), SynchronousFactory.getSpinSynchronous());
 		try {
 			db.start();
 		} catch (InterruptedException e) {

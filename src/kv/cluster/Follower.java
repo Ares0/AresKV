@@ -106,9 +106,14 @@ public class Follower implements Duplicater {
 						return;
 					}
 				}
+				
+				// reset
+				ackMsg.setRep(false);  
+				
 				if (tickTime - lastTime < 0) {
 					ackMsg.setRep(true);
 				}
+				
 				if (cc != null && cc.isWritable()) {
 					cc.writeAndFlush(ackMsg);
 				}

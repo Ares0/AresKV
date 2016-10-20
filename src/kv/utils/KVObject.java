@@ -6,15 +6,15 @@ public class KVObject implements Serializable {
 
 	private static final long serialVersionUID = -8776525355295644753L;
 
-	private int type;
+	private DataType type;
 	
 	private Object value;
 
-	public int getType() {
+	public DataType getType() {
 		return type;
 	}
 
-	public void setType(int type) {
+	public void setType(DataType type) {
 		this.type = type;
 	}
 

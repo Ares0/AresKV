@@ -172,7 +172,7 @@ public class MasterSlaveDB extends AbstractDB {
 				spinCount++;
 			}
 			
-			int com = req.getCommand();
+			Command com = req.getCommand();
 			if (com == Command.PUT || com == Command.GET
 					|| com == Command.REMOVE || com == Command.RESET
 					|| com == Command.DIRTY || com == Command.EXPIRE) {
@@ -183,6 +183,8 @@ public class MasterSlaveDB extends AbstractDB {
 			} else {
 				System.out.println("wrong request type " + req.getCommand());
 			}
+			txid++;  //  ¬ŒÒ–Ú¡–∫≈
+			req = null;  // gc except expire and watch
 		}
 		System.out.println("ms dbe stop " + spinCount);
 	}

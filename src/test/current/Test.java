@@ -1,15 +1,11 @@
 package test.current;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import kv.utils.DataType;
 
 public class Test {
 
-	public static void main(String[] args) throws UnknownHostException {
-		System.out.println("1".hashCode());
-		System.out.println("fafhkdas".hashCode() % 16384);
-		
-		System.out.println(InetAddress.getLocalHost().getHostAddress());
+	public static void main(String[] args) {
+		System.out.println(DataType.STRING_TYPE.getVal());
 	}
 
 }

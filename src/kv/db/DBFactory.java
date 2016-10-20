@@ -19,18 +19,15 @@ public class DBFactory {
 		return getStandardDB(KVMap.DEFAULT_INITIAL_CAPACITY, null, null, null);
 	}
 	
-	public static StandAloneDB getStandardDB(int initCapacity, RequestQueue req, 
+	public static synchronized StandAloneDB getStandardDB(int initCapacity, RequestQueue req, 
 			ResponseQueue rep, Synchronous syn) {
 		if (db != null) {
 			return (StandAloneDB) db;
-		}
-		synchronized (StandAloneDB.class) {
-			if (db == null) {
-				if (req == null || syn == null) {
-					db = new StandAloneDB(initCapacity);
-				} else {
-					db = new StandAloneDB(initCapacity, req, rep, syn);
-				}
+		} else {
+			if (req == null || syn == null) {
+				db = new StandAloneDB(initCapacity);
+			} else {
+				db = new StandAloneDB(initCapacity, req, rep, syn);
 			}
 		}
 		return (StandAloneDB) db;
@@ -40,18 +37,15 @@ public class DBFactory {
 		return getClusterDB(start, end, null, null, null, null);
 	}
 	
-	public static ClusterDB getClusterDB(int start, int end, RequestQueue req, 
+	public static synchronized ClusterDB getClusterDB(int start, int end, RequestQueue req, 
 			ResponseQueue rep, Synchronous syn, Map<String, Range> clusterRange) {
 		if (db != null) {
 			return (ClusterDB) db;
-		}
-		synchronized (StandAloneDB.class) {
-			if (db == null) {
-				if (req == null || syn == null) {
-					db = new ClusterDB(start, end);
-				} else {
-					db = new ClusterDB(start, end, req, rep, syn, clusterRange);
-				}
+		} else {
+			if (req == null || syn == null) {
+				db = new ClusterDB(start, end);
+			} else {
+				db = new ClusterDB(start, end, req, rep, syn, clusterRange);
 			}
 		}
 		return (ClusterDB) db;
@@ -61,18 +55,15 @@ public class DBFactory {
 		return getMasterSlaveDB(null, null, null, null, null, null);
 	}
 	
-	public static MasterSlaveDB getMasterSlaveDB(RequestQueue req, 
+	public static synchronized MasterSlaveDB getMasterSlaveDB(RequestQueue req, 
 			ResponseQueue rep, Synchronous syn, RequestQueue dup, List<String> sa, DBState state) {
 		if (db != null) {
 			return (MasterSlaveDB) db;
-		}
-		synchronized (MasterSlaveDB.class) {
-			if (db == null) {
-				if (req == null || syn == null) {
-					db = new MasterSlaveDB();
-				} else {
-					db = new MasterSlaveDB(req, rep, syn, dup, sa, state);
-				}
+		} else {
+			if (req == null || syn == null) {
+				db = new MasterSlaveDB();
+			} else {
+				db = new MasterSlaveDB(req, rep, syn, dup, sa, state);
 			}
 		}
 		return (MasterSlaveDB) db;

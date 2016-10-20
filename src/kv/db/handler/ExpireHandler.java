@@ -25,7 +25,7 @@ public class ExpireHandler extends AbstractHandler {
 	
 	public void process(DbRequest req) {
 		String key = req.getKey();
-		int type = req.getCommand();
+		Command type = req.getCommand();
 		long current = System.currentTimeMillis();
 		
 		if (type == Command.PUT 

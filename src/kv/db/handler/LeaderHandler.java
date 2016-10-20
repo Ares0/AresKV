@@ -19,7 +19,7 @@ public class LeaderHandler extends AbstractHandler {
 	}
 	
 	public void process(DbRequest req) {
-		int type = req.getCommand();
+		Command type = req.getCommand();
 		if (type == Command.PUT || type == Command.REMOVE) {
 			sendLeaderMsg(req);
 		}

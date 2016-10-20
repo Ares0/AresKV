@@ -113,7 +113,7 @@ public class ClusterDB extends AbstractDB {
 				spinCount++;
 			}
 			
-			int com = req.getCommand();
+			Command com = req.getCommand();
 			if (com == Command.PUT || com == Command.GET
 					|| com == Command.REMOVE || com == Command.RESET
 					|| com == Command.ADD_CLUSTER_NODE || com == Command.CHANGE_CLUSTER_RANGE) {
@@ -124,6 +124,7 @@ public class ClusterDB extends AbstractDB {
 			} else {
 				System.out.println("wrong request type " + req.getCommand());
 			}
+			req = null;  // gc except expire and watch
 		}
 		System.out.println("cluster node stop " + spinCount);
 	}

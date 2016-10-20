@@ -20,7 +20,7 @@ public class ClusterHandler extends AbstractHandler {
 	
 	@Override
 	public void process(DbRequest req) {
-		int type = req.getCommand();
+		Command type = req.getCommand();
 		ClusterDB cdb = (ClusterDB)db;
 		
 		if (type == Command.ADD_CLUSTER_NODE) {

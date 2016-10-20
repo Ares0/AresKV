@@ -109,34 +109,34 @@ public class Dumper implements Runnable {
 	private void writeType(Object obj) throws IOException {
 		String str = obj.toString();
 		if (obj instanceof String) {
-			out.writeInt(DataType.STRING_TYPE);
+			out.writeInt(DataType.STRING_TYPE.getVal());
 			out.writeUTF(str);
 		} else if (obj instanceof Integer) {
-			out.writeInt(DataType.INT_TYPE);
+			out.writeInt(DataType.INT_TYPE.getVal());
 			out.writeInt(Integer.parseInt(str));
 		} else if (obj instanceof Byte) {
-			out.writeInt(DataType.BYTE_TYPE);
+			out.writeInt(DataType.BYTE_TYPE.getVal());
 			out.writeByte(Byte.parseByte(str));
 		} else if (obj instanceof Float) {
-			out.writeInt(DataType.FLOAT_TYPE);
+			out.writeInt(DataType.FLOAT_TYPE.getVal());
 			out.writeFloat(Float.parseFloat(str));
 		} else if (obj instanceof Double) {
-			out.writeInt(DataType.DOUBLE_TYPE);
+			out.writeInt(DataType.DOUBLE_TYPE.getVal());
 			out.writeDouble(Double.parseDouble(str));
 		} else if (obj instanceof Character) {
-			out.writeInt(DataType.CHAR_TYPE);
+			out.writeInt(DataType.CHAR_TYPE.getVal());
 			out.writeUTF(str);
 		} else if (obj instanceof Boolean) {
-			out.writeInt(DataType.BOOLEAN_TYPE);
+			out.writeInt(DataType.BOOLEAN_TYPE.getVal());
 			out.writeBoolean(Boolean.parseBoolean(str));
 		} else if (obj instanceof Short) {
-			out.writeInt(DataType.SHORT_TYPE);
+			out.writeInt(DataType.SHORT_TYPE.getVal());
 			out.writeShort(Short.parseShort(str));
 		} else if (obj instanceof Long) {
-			out.writeInt(DataType.LONG_TYPE);
+			out.writeInt(DataType.LONG_TYPE.getVal());
 			out.writeLong(Long.parseLong(str));
 		} else {
-			out.writeInt(DataType.STRING_TYPE);
+			out.writeInt(DataType.STRING_TYPE.getVal());
 			out.writeUTF(str);
 		}
 	}

@@ -33,7 +33,7 @@ public class KVConnection {
 	}
 
 	public RemoteResponse process(RemoteRequest req) {
-		int com = req.getCommand();
+		Command com = req.getCommand();
 		String ke = req.getKey();
 		KVObject val = req.getValue();
 		
@@ -64,6 +64,8 @@ public class KVConnection {
 		} else {
 			System.out.println("connection wrong argument" + ke + cid);
 		}
+		
+		req = null;  // remote gc
 		return rep;
 	}
 	

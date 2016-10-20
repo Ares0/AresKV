@@ -25,6 +25,9 @@ public class KVNetHandler extends ChannelInboundHandlerAdapter {
 		RemoteRequest req = (RemoteRequest) msg;
 		RemoteResponse rep = db.getConnection().process(req);
 		ctx.writeAndFlush(rep);
+		
+		rep = null;
+		req = null;
 	}
 
 }

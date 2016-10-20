@@ -24,7 +24,7 @@ public class DataHandler extends AbstractHandler {
 	}
 	
 	public void process(DbRequest req) {
-		int type = req.getCommand();
+		Command type = req.getCommand();
 		
 		if (db instanceof MasterSlaveDB) {
 			if (((MasterSlaveDB) db).getState() == DBState.FOLLOWERING

@@ -22,7 +22,7 @@ public class WatchHandler extends AbstractHandler {
 	
 	public void process(DbRequest req) {
 		String key = req.getKey();
-		int type = req.getCommand();
+		Command type = req.getCommand();
 		DbRequest reqWatch = dt.get(key);
 		long cid = req.getClientId();
 		

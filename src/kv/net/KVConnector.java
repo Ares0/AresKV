@@ -10,8 +10,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import kv.KVDataBase;
 
 // Connector
@@ -44,6 +42,8 @@ public class KVConnector implements Runnable {
 	
 	public void start() throws InterruptedException {
 		connectorThread = new Thread(this);
+		connectorThread.setName("Connector-Thread");
+		
 		connectorThread.start();
 		System.out.println("kv connector start");
 	}
@@ -60,10 +60,8 @@ public class KVConnector implements Runnable {
 		try {
             bootstrap.group(acceptorGroup, workerGroup)
                      .channel(NioServerSocketChannel.class)
-//                   .option(ChannelOption.SO_BACKLOG, 100)
                      .childHandler(new ChannelInitializer<SocketChannel>() {
                         public void initChannel(SocketChannel ch) throws Exception {
-                        	ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                         	ch.pipeline().addLast(new ObjectDecoder(DEFAULT_OBJECT_SIZE, ClassResolvers.weakCachingConcurrentResolver(
                                       				this.getClass().getClassLoader())));
                         	ch.pipeline().addLast(new ObjectEncoder());

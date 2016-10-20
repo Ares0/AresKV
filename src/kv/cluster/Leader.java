@@ -148,7 +148,8 @@ public class Leader implements Duplicater, Runnable {
 							String key = e.getKey();
 							if ((cc = cfm.get(key)) != null) {
 								cfm.remove(key);
-								cc.close();
+								slaveTick.remove(key);
+								cc.close();  // close
 							}
 						}
 					}

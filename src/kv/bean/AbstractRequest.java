@@ -13,7 +13,7 @@ public abstract class AbstractRequest implements Serializable {
 	
 	protected KVObject value;
 	
-	protected int command;
+	protected Command command;
 	
 	protected boolean watch;
 	
@@ -37,11 +37,11 @@ public abstract class AbstractRequest implements Serializable {
 		this.value = value;
 	}
 
-	public int getCommand() {
+	public Command getCommand() {
 		return command;
 	}
 
-	public void setCommand(int command) {
+	public void setCommand(Command command) {
 		this.command = command;
 	}
 
@@ -69,7 +69,7 @@ public abstract class AbstractRequest implements Serializable {
 		this.clientId = clientId;
 	}
 	
-	protected void volidateCommond(int command) {
+	protected void volidateCommond(Command command) {
 		if (command != Command.PUT && command != Command.GET 
 				&& command != Command.REMOVE && command != Command.RESET && command != Command.CLOSE
 				&& command != Command.EXPIRE && command != Command.DIRTY

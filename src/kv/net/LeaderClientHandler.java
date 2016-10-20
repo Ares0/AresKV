@@ -30,6 +30,8 @@ public class LeaderClientHandler extends ChannelInboundHandlerAdapter implements
 		} catch(Exception e) {
 			System.out.println("master wrong ackMsg" + e.toString());
 		}
+		
+		msg = null;
 	}
 
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)

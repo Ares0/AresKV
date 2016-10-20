@@ -1,5 +1,6 @@
 package kv.bean;
 
+import kv.Command;
 import kv.utils.KVObject;
 
 /**
@@ -13,7 +14,7 @@ public class DbRequest extends AbstractRequest {
 	
 	private long currentTime;
 	
-	public DbRequest(int command, String key, KVObject value, long id) {
+	public DbRequest(Command command, String key, KVObject value, long id) {
 		volidateCommond(command);
 		
 		this.command = command;

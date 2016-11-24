@@ -17,7 +17,7 @@ import kv.KVDataBase;
 // Connector
 /**
  *  Connector
- * 连接小缓冲区，增加缓冲区，使用堆外，复用内存。
+ * 连接小缓冲区，增加缓冲区，使用堆外内存池。
  * */
 public class KVConnector implements Runnable {
 

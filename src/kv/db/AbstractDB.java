@@ -1,5 +1,7 @@
 package kv.db;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import kv.KVDataBase;
 import kv.db.handler.Handler;
 import kv.db.log.Dumper;
@@ -10,6 +12,7 @@ import kv.synchro.Synchronous;
 import kv.utils.KVObject;
 import kv.utils.KVNode;
 
+// AbstractDB
 public abstract class AbstractDB implements KVDataBase {
 
 	protected KVConnection con;
@@ -22,7 +25,7 @@ public abstract class AbstractDB implements KVDataBase {
 	
 	protected boolean isRunning;
 	
-	protected long clientId;
+	protected AtomicLong clientId;
 	
 	protected int spinCount;
 	
@@ -63,7 +66,7 @@ public abstract class AbstractDB implements KVDataBase {
 	}
 
 	public long getClientId() {
-		return clientId++;
+		return clientId.incrementAndGet();
 	}
 
 	public Iterator getIterator() {

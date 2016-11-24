@@ -2,6 +2,7 @@ package kv.db;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import kv.Command;
 import kv.bean.DbRequest;
@@ -17,7 +18,7 @@ import kv.db.log.Dumper;
 import kv.net.KVConnector;
 import kv.queue.RequestLinkedQueue;
 import kv.queue.RequestQueue;
-import kv.queue.ResponseLinkedQueue;
+import kv.queue.ResponseMapQueue;
 import kv.queue.ResponseQueue;
 import kv.synchro.Synchronous;
 import kv.synchro.SynchronousFactory;
@@ -39,18 +40,18 @@ public class MasterSlaveDB extends AbstractDB {
 	private List<String> slaveAddress;
 	
 	MasterSlaveDB() {
-		this(new RequestLinkedQueue(), new ResponseLinkedQueue(), 
+		this(new RequestLinkedQueue(), new ResponseMapQueue(), 
 				SynchronousFactory.getSpinSynchronous(), new RequestLinkedQueue(), null, DBState.FOLLOWERING);
 	}
 	
 	MasterSlaveDB(List<String> sa, DBState state) {
-		this(new RequestLinkedQueue(), new ResponseLinkedQueue(), 
+		this(new RequestLinkedQueue(), new ResponseMapQueue(), 
 				SynchronousFactory.getSpinSynchronous(), new RequestLinkedQueue(), sa, state);
 	}
 	
 	MasterSlaveDB(RequestQueue req,
 			ResponseQueue rep, Synchronous syn, RequestQueue dup, List<String> sa, DBState state) {
-		clientId = 1;
+		clientId = new AtomicLong(1);
 		dump = new Dumper(this);
 		connector = new KVConnector(this);
 		
@@ -183,6 +184,7 @@ public class MasterSlaveDB extends AbstractDB {
 			} else {
 				System.out.println("wrong request type " + req.getCommand());
 			}
+			
 			txid++;  //  ¬ŒÒ–Ú¡–∫≈
 			req = null;  // gc db req except expire and watch
 		}

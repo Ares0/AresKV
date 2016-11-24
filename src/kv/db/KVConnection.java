@@ -13,7 +13,6 @@ import kv.utils.Utils;
 
 /**
  *   Adapter
- *  不同的客户端不断连接过来，Map会很大且难以回收；
  * 客户端保存clientId、服务器只生成顺序id。
  * */
 public class KVConnection {

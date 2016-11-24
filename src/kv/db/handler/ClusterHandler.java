@@ -40,11 +40,11 @@ public class ClusterHandler extends AbstractHandler {
 		} else if (type == Command.PUT || type == Command.GET || type == Command.REMOVE) {
 			int range = getRange(req.getKey());
 			Range r = cdb.getKeyRange();
+			
 			if (range < r.getStart() || range > r.getEnd()) {
 				DbResponse rep = moveReponse(req, range);
 				db.getResponseQueue().produce(rep);
-				// 不命中返回
-				return;
+				return; // 不命中返回
 			}
 		} else if (type == Command.CHANGE_CLUSTER_RANGE) {
 			// TODO 可能需要，处理重新分片

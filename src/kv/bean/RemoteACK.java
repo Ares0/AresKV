@@ -1,6 +1,6 @@
 package kv.bean;
 
-
+// ack
 public class RemoteACK {
 
 	private boolean i; // isRep

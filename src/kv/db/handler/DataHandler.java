@@ -56,6 +56,7 @@ public class DataHandler extends AbstractHandler {
 		rep.setClientId(req.getClientId());
 		rep.setKey(req.getKey());
 		rep.setValue(req.getValue());
+		
 		db.getResponseQueue().produce(rep);
 	}
 	

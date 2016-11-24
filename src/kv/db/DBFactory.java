@@ -11,6 +11,7 @@ import kv.synchro.Synchronous;
 import kv.utils.KVMap;
 import kv.utils.Range;
 
+// Factory
 public class DBFactory {
 
 	private static KVDataBase db;

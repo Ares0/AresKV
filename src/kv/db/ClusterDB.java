@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import kv.Command;
 import kv.bean.DbRequest;
@@ -15,7 +16,7 @@ import kv.db.log.Dumper;
 import kv.net.KVConnector;
 import kv.queue.RequestLinkedQueue;
 import kv.queue.RequestQueue;
-import kv.queue.ResponseLinkedQueue;
+import kv.queue.ResponseMapQueue;
 import kv.queue.ResponseQueue;
 import kv.synchro.Synchronous;
 import kv.synchro.SynchronousFactory;
@@ -38,18 +39,18 @@ public class ClusterDB extends AbstractDB {
 	public static int KEY_RANGE_MAX_VALUE = 16384;
 	
 	ClusterDB(int keyStart, int keyEnd) {
-		this(keyStart, keyEnd, new RequestLinkedQueue(), new ResponseLinkedQueue(), 
+		this(keyStart, keyEnd, new RequestLinkedQueue(), new ResponseMapQueue(), 
 				SynchronousFactory.getSpinSynchronous(), null);
 	}
 	
 	ClusterDB(Range range, Map<String, Range> clusterRouter) {
-		this(range.getStart(), range.getEnd(), new RequestLinkedQueue(), new ResponseLinkedQueue(), 
+		this(range.getStart(), range.getEnd(), new RequestLinkedQueue(), new ResponseMapQueue(), 
 				SynchronousFactory.getSpinSynchronous(), clusterRouter);
 	}
 	
 	ClusterDB(int keyStart, int keyEnd, RequestQueue req,
 			ResponseQueue rep, Synchronous syn, Map<String, Range> clusterRange) {
-		clientId = 1;
+		clientId = new AtomicLong(1);
 		dump = new Dumper(this);
 		connector = new KVConnector(this);
 		

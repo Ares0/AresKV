@@ -19,7 +19,6 @@ import kv.synchro.Synchronous;
  *  leader
  * 服务端监听，绑定Channel；
  * 单独的线程遍历ctx来写入数据，暂不处理重新复制。
- * 不一定select哪个worker，但channel（连接）是确实存在的。
  * */
 public class Leader implements Duplicater, Runnable {
 	

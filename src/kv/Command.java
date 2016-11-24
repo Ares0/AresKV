@@ -1,7 +1,5 @@
 package kv;
 
-
-// command
 public enum Command {
 
 	PUT(1), GET(2), REMOVE(3), RESET(4), CLOSE(5),

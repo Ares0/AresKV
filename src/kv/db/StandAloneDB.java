@@ -1,5 +1,7 @@
 package kv.db;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import kv.Command;
 import kv.bean.DbRequest;
 import kv.db.handler.DataHandler;
@@ -9,7 +11,7 @@ import kv.db.log.Dumper;
 import kv.net.KVConnector;
 import kv.queue.RequestLinkedQueue;
 import kv.queue.RequestQueue;
-import kv.queue.ResponseLinkedQueue;
+import kv.queue.ResponseMapQueue;
 import kv.queue.ResponseQueue;
 import kv.synchro.Synchronous;
 import kv.synchro.SynchronousFactory;
@@ -21,12 +23,12 @@ public class StandAloneDB extends AbstractDB{
 
 	StandAloneDB(int initCapacity) {
 		this(initCapacity, new RequestLinkedQueue(), 
-				new ResponseLinkedQueue(), SynchronousFactory.getSpinSynchronous());
+				new ResponseMapQueue(), SynchronousFactory.getSpinSynchronous());
 	}
 	
 	StandAloneDB(int initCapacity, RequestQueue req,
 			ResponseQueue rep, Synchronous syn) {
-		clientId = 1;
+		clientId = new AtomicLong(1);
 		dump = new Dumper(this);
 		connector = new KVConnector(this);
 		

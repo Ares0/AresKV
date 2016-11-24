@@ -15,7 +15,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 	
 	long time;
 	
-	int sum = 100000;
+	int sum = 1000000;
 	
 	int repNum = 0;
 	
@@ -44,7 +44,6 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 	    	
 	    	ReferenceCountUtil.release(pool);
 		}
-		ctx.flush();
     }
 
     public void channelRead(ChannelHandlerContext ctx, Object msg)
